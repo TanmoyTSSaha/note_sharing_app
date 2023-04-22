@@ -138,12 +138,12 @@ class UserLoginPageState extends State<UserLoginPage> {
                                   });
                                   Get.offAll(box.get(userProfileKey) != null
                                       ? Home(
-                                          userData: box.get(userDataKey),
+                                          // userData: box.get(userDataKey),
                                           // userProfileData:
                                           //     loginService.userProfile,
-                                        )
+                                          )
                                       : CreateProfileScreen(
-                                          isNew: false,
+                                          isNew: true,
                                           userData: box.get(userDataKey),
                                         ));
                                   isvalidUser = true;

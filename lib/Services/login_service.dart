@@ -3,13 +3,10 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:hive/hive.dart';
 import 'package:note_sharing_app/Hive/logged_in.dart';
 import 'package:note_sharing_app/constants.dart';
 import 'package:note_sharing_app/main.dart';
-import 'package:note_sharing_app/models/login_response_model.dart';
 import 'package:http/http.dart' as http;
-import 'package:note_sharing_app/models/profile_model.dart';
 
 import '../Hive/token/token.dart';
 import '../Hive/user_profile.dart';
@@ -25,6 +22,15 @@ class LoginService extends ChangeNotifier {
   UserProfileDataHive? userProfile;
   bool refreshToken = false;
   // var box = Hive.box<UserDataHive>("UserInfo");
+  void changeStatusEmailExist(bool status) {
+    isuserEmailAlreadyExist = status;
+    notifyListeners();
+  }
+
+  void changeStatusUserNameExist(bool status) {
+    isUserAlreadyExist = status;
+    notifyListeners();
+  }
 
   registerUser(
       {required String firstName,
@@ -116,18 +122,21 @@ class LoginService extends ChangeNotifier {
         },
       );
 
-      Map<String, dynamic> data =
+      Map<String, dynamic> mapData =
           jsonDecode(loginResponse.body) as Map<String, dynamic>;
+      Map<String, dynamic> data = mapData["data"];
+      log("user data respose --${data}");
       if (data.containsKey("id")) {
         userData = UserDataHive.fromMap(data);
         box.put(userDataKey, userData!);
-        notifyListeners();
+        log(userData.toString());
       } else {
+        log("user data is null");
         userData = null;
       }
     } catch (e) {
       Fluttertoast.showToast(msg: "$e");
-      log(e.toString());
+      log("while getting user data ----$e");
     }
   }
 
@@ -137,7 +146,7 @@ class LoginService extends ChangeNotifier {
       int? year,
       String? desc,
       String? gender,
-      File? profileImage,
+      // File? profileImage,
       int? userId}) async {
     try {
       http.Response response = await http.post(
@@ -155,11 +164,12 @@ class LoginService extends ChangeNotifier {
             "university": university,
             "course": course,
             "year": year,
-            "profile_image": profileImage
+            // "profile_image": profileImage
           }));
-      Map<String, dynamic> data =
+      Map<String, dynamic> mapData =
           jsonDecode(response.body) as Map<String, dynamic>;
-      data = data["data"];
+
+      Map<String, dynamic> data = mapData["data"];
       if (data.containsKey("id") || data.containsKey("user")) {
         userProfile = UserProfileDataHive.fromMap(data);
         box.put(userProfileKey, userProfile!);
@@ -192,6 +202,7 @@ class LoginService extends ChangeNotifier {
         log("${box.get(userProfileKey)} __________________________");
       }
     } catch (e) {
+      log("while getting profile details error---$e");
       Fluttertoast.showToast(msg: "Wrong Credentials");
     }
   }

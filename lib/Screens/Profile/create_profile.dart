@@ -31,7 +31,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   TextEditingController descController = TextEditingController();
   String? collegeId;
   String? profilePicUrl;
-  // XFile? profile;
   GlobalKey<FormState> _createProfileScreen = GlobalKey<FormState>();
   int? gender;
   bool isButtonPressed = false;
@@ -58,7 +57,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    log("creste profile screen");
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -67,7 +65,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
           iconColor: primaryColor1,
         ),
         title: Text(
-          "Create Profile",
+          widget.isNew ? "Create Profile" : "Update Profile ",
           style: GoogleFonts.poppins(
             fontSize: 16,
             color: textColorBlack,
@@ -232,7 +230,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                                       });
                                       log("-------" + profileData.toString());
                                       Get.offAll(Home(
-                                        userData: loginService.userData!,
+                                        // userData: loginService.userData!,
                                         // userProfileData: profileData,
                                       ));
                                     } else {
@@ -255,7 +253,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                                       AlwaysStoppedAnimation(Colors.white),
                                 ),
                               )
-                            : Text("Update",
+                            : Text(widget.isNew ? "Create" : "Update",
                                 style: GoogleFonts.poppins(
                                   textStyle: const TextStyle(fontSize: 16),
                                 )))

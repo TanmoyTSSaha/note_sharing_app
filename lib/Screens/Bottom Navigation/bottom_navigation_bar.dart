@@ -25,7 +25,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
       body: IndexedStack(
         index: bottomNavIndex,
         children: [
-          Home(userData: Provider.of<LoginService>(context).userData!),
+          Home(),
           const Explore(),
           const Explore(),
           const Chat(),

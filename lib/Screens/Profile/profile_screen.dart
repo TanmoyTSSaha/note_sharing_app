@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,7 +27,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     userProfileData = box.get(userProfileKey);
-    log(userProfileData.toString());
   }
 
   @override
@@ -90,22 +88,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(4),
-                          child: Container(
-                            height: 24,
-                            width: 24,
-                            decoration: BoxDecoration(
-                              color: primaryColor1,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Icon(
-                              Icons.edit,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                     SizedBox(
@@ -122,7 +104,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      userProfileData.course!,
+                      userProfileData.course??"-",
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: textColorBlack,
@@ -131,7 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      userProfileData.description!,
+                      userProfileData.description??"-",
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
@@ -186,6 +168,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Text("Logout", style: GoogleFonts.poppins()),
                         onPressed: () {
                           Get.offAll(UserLoginPage());
+                          box.delete(userDataKey);
+                          box.delete(userProfileKey);
+                          box.delete(tokenHiveKey);
                         })
                   ],
                 ),

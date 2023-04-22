@@ -17,9 +17,9 @@ class PostsPage extends StatefulWidget {
   State<PostsPage> createState() => _PostsPageState();
 }
 
-AllPostsModel? allPosts;
-
 class _PostsPageState extends State<PostsPage> {
+  late Future<AllPostsModel?> allPosts;
+  late TokenModel a;
   Future<AllPostsModel?> getPosts({required String userToken}) async {
     try {
       http.Response response = await http.get(
@@ -50,9 +50,8 @@ class _PostsPageState extends State<PostsPage> {
   }
 
   assignValue() async {
-    TokenModel a = box.get(tokenHiveKey);
-
-    allPosts = await getPosts(userToken: a.accessToken!);
+    a = box.get(tokenHiveKey);
+    allPosts = getPosts(userToken: a.accessToken!);
   }
 
   @override
@@ -101,12 +100,28 @@ class _PostsPageState extends State<PostsPage> {
             width: Get.width,
             padding: const EdgeInsets.all(16),
             child: allPosts != null
-                ? ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: allPosts!.data!.length,
-                    itemBuilder: (context, index) {
-                      return Posts(index: index);
+                ? FutureBuilder(
+                    initialData: null,
+                    future: allPosts,
+                    builder: (context, AsyncSnapshot<AllPostsModel?> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+                      // List<PostModel> posts = snapshot.data!.data!
+                      //     .map((e) =>
+                      //         PostModel.fromMap(e as Map<String, dynamic>))
+                      //     .toList();
+                      // return Text(snapshot.data.toString());
+                      return ListView.separated(
+                          itemBuilder: (context, index) {
+                            return Text(snapshot.data!.data![0].toString());
+                          },
+                          separatorBuilder: (contex, index) {
+                            return SizedBox(
+                              height: 4,
+                            );
+                          },
+                          itemCount: snapshot.data!.data!.length);
                     },
                   )
                 : Center(
@@ -119,10 +134,10 @@ class _PostsPageState extends State<PostsPage> {
 }
 
 class Posts extends StatelessWidget {
-  int index;
+  AllPostsModel post;
   Posts({
     super.key,
-    required this.index,
+    required this.post,
   });
 
   @override
@@ -179,7 +194,7 @@ class Posts extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            allPosts!.data![0].post_content!,
+            post.data![0].post_content!,
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -188,7 +203,7 @@ class Posts extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            allPosts!.data![index].post_content!,
+            post.data![0].post_content!,
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w400,
@@ -196,7 +211,7 @@ class Posts extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          allPosts!.data![index].post_image != null
+          post.data![0].post_image != null
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: Image.asset("assets/images/book.jpg"),

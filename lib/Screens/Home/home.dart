@@ -19,8 +19,9 @@ import 'package:note_sharing_app/main.dart';
 import '../../Hive/logged_in.dart';
 
 class Home extends StatefulWidget {
-  final UserDataHive? userData;
-  const Home({super.key, this.userData});
+  const Home({
+    super.key,
+  });
 
   @override
   State<Home> createState() => _HomeState();
@@ -28,6 +29,8 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   UserProfileDataHive? profileData;
+  UserDataHive? userData;
+
   TextEditingController searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -40,7 +43,7 @@ class _HomeState extends State<Home> {
             valueListenable: box.listenable(),
             builder: (context, boxdetails, _) {
               profileData = box.get(userProfileKey);
-
+              userData = box.get(userDataKey);
               return Scaffold(
                 appBar: AppBar(
                   backgroundColor: Colors.white,
@@ -48,7 +51,7 @@ class _HomeState extends State<Home> {
                   leading: GestureDetector(
                     onTap: () {
                       Get.to(() => ProfileScreen(
-                            userData: widget.userData!,
+                            userData: userData!,
                           ));
                     },
                     child: CircleAvatar(
@@ -64,7 +67,7 @@ class _HomeState extends State<Home> {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       Text(
-                        "Hi ${widget.userData!.first_name} ",
+                        "Hi ${userData!.first_name} ",
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

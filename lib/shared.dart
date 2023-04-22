@@ -37,6 +37,7 @@ class MyTextFormField extends StatelessWidget {
   final Widget? prefixIcon;
   final int? maxLength;
   final bool readOnly;
+  Function(String)?onChanged;
   final int? maxlines;
   final bool ownValidator;
   final bool numValidator;
@@ -61,6 +62,7 @@ class MyTextFormField extends StatelessWidget {
     this.prefixIcon,
     this.maxLength,
     this.readOnly = false,
+    this.onChanged,
     this.maxlines,
     this.ownValidator = false,
     this.emailValidator = false,
@@ -82,6 +84,7 @@ class MyTextFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      onChanged: onChanged,
       controller: controller,
       decoration: InputDecoration(
           suffixIcon: suffixIcon,

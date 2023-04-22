@@ -64,6 +64,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     height: height10 * 2,
                   ),
                   MyTextFormField(
+                    onChanged: (val) {
+                      loginService.changeStatusUserNameExist(false);
+                    },
                     ownValidator: true,
                     validator: (value) {
                       if (value!.isEmpty) {
@@ -105,6 +108,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       } else if (useremailAlreadyExist == true) {
                         return "User with this email already exist";
                       }
+                    },
+                    onChanged: (val) {
+                      loginService.changeStatusEmailExist(false);
                     },
                     emailValidator: true,
                     controller: emailController,
@@ -172,39 +178,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     height: height10 * 3,
                   ),
                   CustomElevatedButton(
-                      onPressed: isButtonPressed?(){}:() async {
-                        if (_registerFormKey.currentState!.validate()) {
-                          setState(() {
-                            isButtonPressed = true;
-                          });
-                          FocusScope.of(context).requestFocus(new FocusNode());
-                          await loginService.registerUser(
-                              firstName: firstNameController.text,
-                              lastName: lastNameController.text,
-                              email: emailController.text,
-                              password: passwordController.text,
-                              userName: userNameController.text);
-                          userData = loginService.userResponseToken;
-                          log("userdata $userData");
-                          userNameAlreadyExist =
-                              loginService.isUserAlreadyExist;
-                          useremailAlreadyExist =
-                              loginService.isuserEmailAlreadyExist;
-                          log(userNameAlreadyExist.toString());
-                          log(useremailAlreadyExist.toString());
-                          if (loginService.userResponseToken != null) {
-                            log(userData.toString());
-                            Get.offAll(CreateProfileScreen(isNew: true,
-                              userData: loginService.userData!,
-                            ));
-                          } else {
-                            Fluttertoast.showToast(msg: "User Already Exist");
-                            setState(() {
-                              isButtonPressed = false;
-                            });
-                          }
-                        }
-                      },
+                      onPressed: isButtonPressed
+                          ? () {}
+                          : () async {
+                              if (_registerFormKey.currentState!.validate()) {
+                                setState(() {
+                                  isButtonPressed = true;
+                                });
+                                FocusScope.of(context)
+                                    .requestFocus(new FocusNode());
+                                await loginService.registerUser(
+                                    firstName: firstNameController.text,
+                                    lastName: lastNameController.text,
+                                    email: emailController.text,
+                                    password: passwordController.text,
+                                    userName: userNameController.text);
+                                userData = loginService.userResponseToken;
+                                log("userdata $userData");
+                                userNameAlreadyExist =
+                                    loginService.isUserAlreadyExist;
+                                useremailAlreadyExist =
+                                    loginService.isuserEmailAlreadyExist;
+                                log(userNameAlreadyExist.toString());
+                                log(useremailAlreadyExist.toString());
+                                if (loginService.userResponseToken != null) {
+                                  setState(() {
+                                    isButtonPressed = false;
+                                  });
+                                  log(userData.toString());
+                                  Get.offAll(CreateProfileScreen(
+                                    isNew: true,
+                                    userData: loginService.userData!,
+                                  ));
+                                } else {
+                                  Fluttertoast.showToast(
+                                      msg: "User Already Exist");
+                                  setState(() {
+                                    isButtonPressed = false;
+                                  });
+                                }
+                              }
+                            },
                       child: isButtonPressed
                           ? const Center(
                               child: CircularProgressIndicator.adaptive(
