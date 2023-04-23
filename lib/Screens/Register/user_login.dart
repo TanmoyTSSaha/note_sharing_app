@@ -173,8 +173,7 @@ class UserLoginPageState extends State<UserLoginPage> {
                                     isvalidUser = true;
                                   } else {
                                     log("user not valid");
-                                    Fluttertoast.showToast(
-                                        msg: "Wrong Credentials");
+                                    toastMessage("Wrong Credentials");
                                     setState(() {
                                       isvalidUser = false;
                                       isButtonPressed = false;

@@ -6,13 +6,17 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:note_sharing_app/Hive/token/token.dart';
 import 'package:note_sharing_app/Screens/Home/comment_screen.dart';
+import 'package:note_sharing_app/Services/login_service.dart';
 import 'package:note_sharing_app/main.dart';
 import 'package:note_sharing_app/shared.dart';
 import '../../Hive/logged_in.dart';
 import '../../Hive/user_profile.dart';
+import '../../Services/post_services.dart';
 import '../../constants.dart';
+import '../../models/comment_model.dart';
 import '../../models/posts_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../Profile/profile_screen.dart';
 
@@ -30,37 +34,12 @@ AllPostsModel? allPosts;
 class _PostsPageState extends State<PostsPage> {
   TokenModel userToken = box.get(tokenHiveKey);
   UserProfileDataHive? profileData;
-  Future<AllPostsModel?> getPosts({required String userToken}) async {
-    try {
-      http.Response response = await http.get(
-        Uri.parse("https://note-sharing-application.onrender.com/post/"),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $userToken'
-        },
-      );
-      log("---  " + response.body.toString());
-      Map<String, dynamic> data =
-          jsonDecode(response.body) as Map<String, dynamic>;
-      if (response.statusCode == 200) {
-        Map<String, dynamic> posts =
-            jsonDecode(response.body) as Map<String, dynamic>;
-        var a = AllPostsModel.fromMap(posts);
-        return a;
-      } else {
-        toastMessage("Failed to load");
-        log("status code while getting post is not 200");
-      }
-    } catch (e) {
-      toastMessage("Failed to load");
-      log("error to get posts---" + e.toString());
-      toastMessage(e.toString());
-    }
-    return null;
-  }
 
   assignValue() async {
-    allPosts = await getPosts(userToken: userToken.accessToken!);
+    allPosts = await PostServices().getPosts(
+      userToken: userToken.accessToken!,
+      refreshToken: userToken.refreshToken!,
+    );
   }
 
   @override
@@ -79,10 +58,6 @@ class _PostsPageState extends State<PostsPage> {
         elevation: 0,
         leading: GestureDetector(
           onTap: () {
-            // log(profileData.toString());
-            // log(box.get(userProfileKey).toString());
-            // log(boxdetails.get(userProfileKey).toString());
-            // // Get.offAll(UserLoginPage());
             Get.to(() => ProfileScreen(
                   userData: widget.userData!,
                   userProfileData: profileData,
@@ -144,31 +119,6 @@ class _PostsPageState extends State<PostsPage> {
               CupertinoIcons.bell_fill,
               color: primaryColor1,
               size: 24,
-
-//            valueListenable: box.listenable(),
-//            builder: (context, boxdetails, _) {
-//              profileData = box.get(userProfileKey);
-//              log(box.get(userProfileKey).toString());
-//              return Scaffold(
-//                appBar: AppBar(
-//                  backgroundColor: Colors.white,
-//                  elevation: 0,
-//                  leading: GestureDetector(
-//                    onTap: () {
-//                      // log(profileData.toString());
-//                      // log(box.get(userProfileKey).toString());
-//                      // log(boxdetails.get(userProfileKey).toString());
-//                      // // Get.offAll(UserLoginPage());
-//                      Get.to(() => ProfileScreen(
-//                            userData: widget.userData!,
-//                            // userProfileData: boxdetails.get(userProfileKey),
-//                          ));
-//                    },
-//                    child: CircleAvatar(
-//                      backgroundColor: Colors.white,
-//                      // foregroundImage:
-//                      //     NetworkImage(profileData!.profile_image!)
-//                      foregroundImage: AssetImage('assets/images/anjali.png'),
             ),
           ),
         ],
@@ -187,6 +137,7 @@ class _PostsPageState extends State<PostsPage> {
                     index: index,
                     userAccessToken: userToken.accessToken!,
                     user_id: widget.userData!.id!,
+                    userRefreshToken: userToken.refreshToken!,
                   );
                 },
                 separatorBuilder: (context, index) => Container(
@@ -205,11 +156,13 @@ class _PostsPageState extends State<PostsPage> {
               ),
       ),
     );
+  
   }
 }
 
 class Posts extends StatefulWidget {
   String userAccessToken;
+  String userRefreshToken;
   int user_id;
   int index;
   Posts({
@@ -217,6 +170,7 @@ class Posts extends StatefulWidget {
     required this.user_id,
     required this.index,
     required this.userAccessToken,
+    required this.userRefreshToken,
   });
 
   @override
@@ -226,6 +180,9 @@ class Posts extends StatefulWidget {
 class _PostsState extends State<Posts> {
   int likeCount = 0;
   bool liked = false;
+  Map<String, dynamic>? userDetails;
+  Map<String, dynamic>? userProfileData;
+  CommentModel? commentModel;
 
   Future postLike() async {
     http.Response likePostResponse = await http.post(
@@ -237,6 +194,7 @@ class _PostsState extends State<Posts> {
       },
     );
     log('post like : ' + likePostResponse.statusCode.toString());
+    toastMessage('Post Liked');
     return likePostResponse;
   }
 
@@ -250,6 +208,7 @@ class _PostsState extends State<Posts> {
       },
     );
     log('delete like : ' + deleteLikePostResponse.statusCode.toString());
+    toastMessage('Like removed!');
     return deleteLikePostResponse;
   }
 
@@ -272,16 +231,86 @@ class _PostsState extends State<Posts> {
           },
         );
       } else {
+        toastMessage('Something went wrong. Please refresh or login again');
         log('Something went wrong. Status code = ${like.statusCode}');
       }
     } catch (e) {
+      toastMessage('Something went wrong. ' + e.toString());
       log(e.toString());
     }
   }
 
+  Future getUserData() async {
+    try {
+      http.Response userResponse = await http.get(
+        Uri.parse(
+            "https://note-sharing-application.onrender.com/user/api/user/user=${allPosts!.data![widget.index].post_author}"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.userAccessToken}'
+        },
+      );
+      if (userResponse.statusCode == 200) {
+        userDetails = jsonDecode(userResponse.body) as Map<String, dynamic>;
+        userDetails = userDetails!['data'];
+        log(userDetails.toString());
+      } else {
+        toastMessage(
+            'Something went wrong. Please refresh again! or Login again');
+        log('getUserData : ' + userResponse.statusCode.toString());
+      }
+    } catch (e) {
+      toastMessage('Something went wrong. $e');
+      log('getUserData : ' + e.toString());
+    }
+  }
+
+  Future getUserProfileData(
+      {required String userRefreshToken,
+      required String userAccessToken}) async {
+    try {
+      http.Response userProfileResponse = await http.get(
+        Uri.parse(
+            "https://note-sharing-application.onrender.com/user/api/profile/user=${allPosts!.data![widget.index].post_author}"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${userAccessToken}'
+        },
+      );
+
+      if (userProfileResponse.statusCode == 401) {
+        try {
+          LoginService().getAccessToken(refreshToken: userRefreshToken);
+        } finally {
+          getUserProfileData(
+            userRefreshToken: userRefreshToken,
+            userAccessToken: userAccessToken,
+          );
+        }
+      } else if (userProfileResponse.statusCode == 200) {
+        userProfileData =
+            jsonDecode(userProfileResponse.body) as Map<String, dynamic>;
+        userProfileData = userProfileData!['data'];
+        log('getUserProfileData else if : ' + userProfileData.toString());
+      } else {
+        toastMessage(
+            'Something went wrong. Please refresh again! or Login again');
+        log('getUserDat : ' + userProfileResponse.statusCode.toString());
+      }
+    } catch (e) {
+      toastMessage('Something went wrong. $e');
+      log('getUserDat : ' + e.toString());
+    }
+  }
+  
   @override
   void initState() {
     getPostLike();
+    getUserData();
+    getUserProfileData(
+      userAccessToken: widget.userAccessToken,
+      userRefreshToken: widget.userRefreshToken,
+    );
     super.initState();
   }
 
@@ -295,24 +324,69 @@ class _PostsState extends State<Posts> {
           const SizedBox(height: 12),
           Row(
             children: [
-              const CircleAvatar(
-                backgroundColor: Colors.white,
-                foregroundImage: AssetImage('assets/images/anjali.png'),
-                minRadius: 24,
-              ),
+              userProfileData != null
+                  ? userProfileData!['profile_image'] != null
+                      ? Container(
+                          height: 48,
+                          width: 48,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(48),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(48),
+                            child: Image.network(
+                              'https://note-sharing-application.onrender.com${userProfileData!['profile_image']}',
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: primaryColor3,
+                                );
+                              },
+                            ),
+                          ),
+                        )
+                      : Container(
+                          height: 48,
+                          width: 48,
+                          decoration: BoxDecoration(
+                            color: secondaryColor3,
+                            borderRadius: BorderRadius.circular(48),
+                          ),
+                        )
+                  : Container(
+                      height: 48,
+                      width: 48,
+                      padding: EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(48),
+                      ),
+                      child: CircularProgressIndicator(
+                        color: primaryColor1,
+                      ),
+                    ),
               const SizedBox(width: 16),
               Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Anjali Jaiswal",
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: textColorBlack,
-                    ),
-                  ),
+                  userDetails != null
+                      ? Text(
+                          "${userDetails!['first_name']} ${userDetails!['last_name']}",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: textColorBlack,
+                          ),
+                        )
+                      : Text(
+                          "Loading...",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: textColorBlack,
+                          ),
+                        ),
                   const SizedBox(height: 4),
                   Text(
                     "2 hours ago",
@@ -359,7 +433,23 @@ class _PostsState extends State<Posts> {
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: Image.network(
-                      "https://note-sharing-application.onrender.com${allPosts!.data![widget.index].post_image}"),
+                    "https://note-sharing-application.onrender.com${allPosts!.data![widget.index].post_image}",
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: Get.width,
+                      height: Get.width,
+                      color: Colors.grey.shade300,
+                      child: Center(
+                        child: Text(
+                          'Oops! Something went wrong...',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: textColorBlack,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 )
               : const SizedBox(
                   height: 0,
@@ -406,7 +496,11 @@ class _PostsState extends State<Posts> {
                 onTap: () {
                   setState(() {
                     Get.to(
-                      () => CommentScreen(),
+                      () => CommentScreen(
+                        post_id: allPosts!.data![widget.index].post_id!,
+                        userAccessToken: widget.userAccessToken,
+                        userRefreshToken: widget.userRefreshToken,
+                      ),
                     );
                   });
                 },
@@ -425,7 +519,7 @@ class _PostsState extends State<Posts> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        "0 comments",
+                        "comments",
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: primaryColor1,
