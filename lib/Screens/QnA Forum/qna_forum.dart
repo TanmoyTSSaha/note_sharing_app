@@ -14,6 +14,7 @@ import 'package:http/http.dart' as http;
 import '../../Hive/token/token.dart';
 import '../../constants.dart';
 import '../../main.dart';
+import '../../shared.dart';
 import '../Profile/profile_screen.dart';
 
 class QnA_Forum extends StatefulWidget {
@@ -70,7 +71,11 @@ class _QnA_ForumState extends State<QnA_Forum> {
                   itemCount: qnaModel!.data!.length,
                   itemBuilder: (context, index) {
                     log(qnaModel!.data![index].user.toString());
-                    return QnAPost(index: index);
+                    return QnaPost(
+                      user_id: qnaModel!.data![index].user!,
+                      index: index,
+                      userAccessToken: userToken.accessToken!,
+                    );
                   },
                   separatorBuilder: (context, index) => Container(
                     height: 6,
@@ -92,12 +97,137 @@ class _QnA_ForumState extends State<QnA_Forum> {
   }
 }
 
-class QnAPost extends StatelessWidget {
+class QnaPost extends StatefulWidget {
+  String userAccessToken;
+  int user_id;
   int index;
-  QnAPost({
+  QnaPost({
     super.key,
+    required this.user_id,
     required this.index,
+    required this.userAccessToken,
   });
+
+  @override
+  State<QnaPost> createState() => _QnaPostState();
+}
+
+class _QnaPostState extends State<QnaPost> {
+  int likeCount = 0;
+  bool liked = false;
+  Map<String, dynamic>? userDetails;
+  Map<String, dynamic>? userProfileData;
+
+  Future postLike() async {
+    http.Response likePostResponse = await http.post(
+      Uri.parse(
+          "https://note-sharing-application.onrender.com/post/post=${qnaModel!.data![widget.index].qnaId}/like/"),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${widget.userAccessToken}'
+      },
+    );
+    log('post like : ' + likePostResponse.statusCode.toString());
+    return likePostResponse;
+  }
+
+  Future deleteLike() async {
+    http.Response deleteLikePostResponse = await http.delete(
+      Uri.parse(
+          "https://note-sharing-application.onrender.com/qna/post=${qnaModel!.data![widget.index].qnaId}/like/"),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${widget.userAccessToken}'
+      },
+    );
+    log('delete like : ' + deleteLikePostResponse.statusCode.toString());
+    return deleteLikePostResponse;
+  }
+
+  Future getPostLike() async {
+    try {
+      http.Response like = await http.get(
+        Uri.parse(
+            "https://note-sharing-application.onrender.com/qna/qna=${qnaModel!.data![widget.index].qnaId}/like"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.userAccessToken}'
+        },
+      );
+      if (like.statusCode == 200 && like.body.isNotEmpty) {
+        Map<String, dynamic> likeMap =
+            jsonDecode(like.body) as Map<String, dynamic>;
+        setState(
+          () {
+            likeCount = likeMap['like_count'];
+          },
+        );
+      } else {
+        log('Something went wrong. Status code = ${like.statusCode}');
+      }
+    } catch (e) {
+      log(e.toString());
+    }
+  }
+
+  Future getUserData() async {
+    try {
+      http.Response userResponse = await http.get(
+        Uri.parse(
+            "https://note-sharing-application.onrender.com/user/api/user/user=${qnaModel!.data![widget.index].user}"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.userAccessToken}'
+        },
+      );
+      if (userResponse.statusCode == 200) {
+        userDetails = jsonDecode(userResponse.body) as Map<String, dynamic>;
+        userDetails = userDetails!['data'];
+        log(userDetails.toString());
+      } else {
+        toastMessage(
+            'Something went wrong. Please refresh again! or Login again');
+        log('getUserData : ' + userResponse.statusCode.toString());
+      }
+    } catch (e) {
+      toastMessage('Something went wrong. $e');
+      log('getUserData : ' + e.toString());
+    }
+  }
+
+  Future getUserProfileData() async {
+    try {
+      http.Response userProfileResponse = await http.get(
+        Uri.parse(
+            "https://note-sharing-application.onrender.com/user/api/profile/user=${qnaModel!.data![widget.index].user}"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.userAccessToken}'
+        },
+      );
+      if (userProfileResponse.statusCode == 200) {
+        userProfileData =
+            jsonDecode(userProfileResponse.body) as Map<String, dynamic>;
+        userProfileData = userProfileData!['data'];
+        log(userProfileData.toString());
+      } else {
+        toastMessage(
+            'Something went wrong. Please refresh again! or Login again');
+        log('getUserDat : ' + userProfileResponse.statusCode.toString());
+      }
+    } catch (e) {
+      toastMessage('Something went wrong. $e');
+      log('getUserDat : ' + e.toString());
+    }
+  }
+
+  @override
+  void initState() {
+    // getPostLike();
+    getUserData();
+    getUserProfileData();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,24 +239,41 @@ class QnAPost extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              const CircleAvatar(
-                backgroundColor: Colors.white,
-                foregroundImage: AssetImage('assets/images/anjali.png'),
-                minRadius: 24,
-              ),
+              userProfileData != null
+                  ? CircleAvatar(
+                      backgroundColor: Colors.white,
+                      foregroundImage: NetworkImage(
+                          'https://note-sharing-application.onrender.com${userProfileData!['profile_image']}'),
+                      minRadius: 24,
+                    )
+                  : CircleAvatar(
+                      backgroundColor: Colors.grey.shade300,
+                      child: CircularProgressIndicator(
+                        color: primaryColor1,
+                      ),
+                    ),
               const SizedBox(width: 16),
               Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "Tanmoy Saha",
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: textColorBlack,
-                    ),
-                  ),
+                  userDetails != null
+                      ? Text(
+                          "${userDetails!['first_name']} ${userDetails!['last_name']}",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: textColorBlack,
+                          ),
+                        )
+                      : Text(
+                          "Loading...",
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: textColorBlack,
+                          ),
+                        ),
                   const SizedBox(height: 4),
                   Text(
                     "2 hours ago",
@@ -161,7 +308,7 @@ class QnAPost extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            qnaModel!.data![index].questionDescription!,
+            qnaModel!.data![widget.index].questionDescription!,
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w400,
@@ -169,10 +316,11 @@ class QnAPost extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          qnaModel!.data![index].questionImage != null
+          qnaModel!.data![widget.index].questionImage != null
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.asset("assets/images/book.jpg"),
+                  child: Image.network(
+                      "https://note-sharing-application.onrender.com${qnaModel!.data![widget.index].questionImage}"),
                 )
               : const SizedBox(
                   height: 0,
@@ -183,7 +331,13 @@ class QnAPost extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               InkWell(
-                onTap: () {},
+                onTap: () async {
+                  setState(() {
+                    liked = !liked;
+                  });
+                  liked ? postLike() : deleteLike();
+                  getPostLike();
+                },
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -199,7 +353,7 @@ class QnAPost extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        "0 likes",
+                        "$likeCount likes",
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: primaryColor1,
@@ -210,7 +364,13 @@ class QnAPost extends StatelessWidget {
                 ),
               ),
               InkWell(
-                onTap: () {},
+                onTap: () {
+                  // setState(() {
+                  //   Get.to(
+                  //     () => CommentScreen(),
+                  //   );
+                  // });
+                },
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -252,5 +412,6 @@ class QnAPost extends StatelessWidget {
         ],
       ),
     );
+    // });
   }
 }
