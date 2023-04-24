@@ -199,8 +199,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     loginService.isUserAlreadyExist;
                                 useremailAlreadyExist =
                                     loginService.isuserEmailAlreadyExist;
-                                log(userNameAlreadyExist.toString());
-                                log(useremailAlreadyExist.toString());
+
                                 if (loginService.userResponseToken != null) {
                                   setState(() {
                                     isButtonPressed = false;

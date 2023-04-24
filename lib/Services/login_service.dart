@@ -7,6 +7,7 @@ import 'package:note_sharing_app/Hive/logged_in.dart';
 import 'package:note_sharing_app/constants.dart';
 import 'package:note_sharing_app/main.dart';
 import 'package:http/http.dart' as http;
+import 'package:note_sharing_app/shared.dart';
 
 import '../Hive/token/token.dart';
 import '../Hive/user_profile.dart';
@@ -58,6 +59,7 @@ class LoginService extends ChangeNotifier {
           jsonDecode(response.body) as Map<String, dynamic>;
       if (data.containsKey("access") || data.containsKey("refresh")) {
         userResponseToken = TokenModel.fromMap(data);
+        notifyListeners();
         box.put(tokenHiveKey, userResponseToken);
         userToken = userResponseToken!.accessToken;
         notifyListeners();
@@ -143,11 +145,12 @@ class LoginService extends ChangeNotifier {
   createProfile(
       {String? university,
       String? course,
-      int? year,
+      String? year,
       String? desc,
       String? gender,
+      String? usertoken,
       // File? profileImage,
-      int? userId}) async {
+      String? userId}) async {
     try {
       http.Response response = await http.post(
           Uri.parse(
@@ -155,7 +158,50 @@ class LoginService extends ChangeNotifier {
           headers: {
             'Content-Type': 'application/json',
             'Charset': 'utf-8',
-            "Authorization": 'Bearer $userToken'
+            "Authorization": 'Bearer $usertoken'
+          },
+          body: jsonEncode({
+            "user": userId,
+            "gender": gender,
+            "description": desc,
+            "university": university,
+            "course": course,
+            "year": year,
+            // "profile_image": profileImage
+          }));
+      Map<String, dynamic> data =
+          jsonDecode(response.body) as Map<String, dynamic>;
+      log(response.body.toString());
+      if (data.containsKey("id") || data.containsKey("user")) {
+        userProfile = UserProfileDataHive.fromMap(data);
+        box.put(userProfileKey, userProfile!);
+        log("-----------------++-----------${box.get(userProfileKey)}");
+        notifyListeners();
+      }
+      log(data.toString());
+    } catch (e) {
+      Fluttertoast.showToast(msg: "$e");
+      log(e.toString());
+    }
+  }
+
+  updateProfileDetails(
+      {String? university,
+      String? course,
+      String? year,
+      String? desc,
+      String? gender,
+      String? usertoken,
+      // File? profileImage,
+      String? userId}) async {
+    try {
+      http.Response response = await http.put(
+          Uri.parse(
+              "https://note-sharing-application.onrender.com/user/api/profile/"),
+          headers: {
+            'Content-Type': 'application/json',
+            'Charset': 'utf-8',
+            "Authorization": 'Bearer $usertoken'
           },
           body: jsonEncode({
             "user": userId,
@@ -168,16 +214,18 @@ class LoginService extends ChangeNotifier {
           }));
       Map<String, dynamic> mapData =
           jsonDecode(response.body) as Map<String, dynamic>;
-
+      log(response.body.toString());
       Map<String, dynamic> data = mapData["data"];
       if (data.containsKey("id") || data.containsKey("user")) {
         userProfile = UserProfileDataHive.fromMap(data);
         box.put(userProfileKey, userProfile!);
+        toastMessage("Updated Succesfully");
         log("-----------------++-----------${box.get(userProfileKey)}");
         notifyListeners();
       }
       log(data.toString());
     } catch (e) {
+      toastMessage("Failed to Update");
       Fluttertoast.showToast(msg: "$e");
       log(e.toString());
     }
@@ -193,8 +241,9 @@ class LoginService extends ChangeNotifier {
           "Authorization": 'Bearer $userToken'
         },
       );
-      Map data = jsonDecode(response.body) as Map;
-      data = data["data"];
+      log(response.body);
+      Map mapData = jsonDecode(response.body) as Map;
+      Map data = mapData["data"];
       if (data.containsKey("id") || data.containsKey("user")) {
         userProfile = UserProfileDataHive.fromMap(data as Map<String, dynamic>);
         box.put(userProfileKey, userProfile);
@@ -206,4 +255,54 @@ class LoginService extends ChangeNotifier {
       Fluttertoast.showToast(msg: "Wrong Credentials");
     }
   }
+
+  updateProfileDetails2(
+      {String? university,
+      String? course,
+      String? year,
+      String? desc,
+      String? gender,
+      String? usertoken,
+      File? profileImage,
+      String? userId}) async {
+    try {
+      Map<String, String> headers = {
+        'Content-Type': 'application/json',
+        'Charset': 'utf-8',
+        "Authorization": 'Bearer $usertoken'
+      };
+      final request = http.MultipartRequest(
+          "PUT",
+          Uri.parse(
+              "https://note-sharing-application.onrender.com/user/api/profile/"));
+      request.files.add(await http.MultipartFile.fromPath(
+          "profile_iamge", profileImage!.path));
+      request.headers.addAll(headers);
+      request.fields["user"] = userId!;
+      request.fields["gender"] = gender!;
+      request.fields["description"] = desc!;
+      request.fields["university"] = university!;
+      request.fields["course"] = course!;
+      request.fields["year"] = year!;
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+      Map<String, dynamic> mapData =
+          jsonDecode(response.body) as Map<String, dynamic>;
+      log(response.body.toString());
+      Map<String, dynamic> data = mapData["data"];
+      if (data.containsKey("id") || data.containsKey("user")) {
+        userProfile = UserProfileDataHive.fromMap(data);
+        box.put(userProfileKey, userProfile!);
+        toastMessage("Updated Succesfully");
+        log("-----------------++-----------${box.get(userProfileKey)}");
+        notifyListeners();
+      }
+      log(data.toString());
+    } catch (e) {
+      toastMessage("Failed to Update");
+      log(e.toString());
+    }
+  }
+
+  getProfileDetails2() async {}
 }

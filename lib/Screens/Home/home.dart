@@ -7,15 +7,18 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:note_sharing_app/Hive/token/token.dart';
 import 'package:note_sharing_app/Hive/user_profile.dart';
 import 'package:note_sharing_app/Screens/Home/posts_screen.dart';
 import 'package:note_sharing_app/Screens/Home/subject_shelf.dart';
+import 'package:note_sharing_app/Screens/Myposts/myposts.dart';
 import 'package:note_sharing_app/Screens/Profile/profile_screen.dart';
 import 'package:note_sharing_app/Screens/Register/user_login.dart';
 import 'package:note_sharing_app/Screens/upload/upload_post.dart';
 import 'package:note_sharing_app/Services/upload_service.dart';
 import 'package:note_sharing_app/constants.dart';
 import 'package:note_sharing_app/main.dart';
+import 'package:provider/provider.dart';
 import '../../Hive/logged_in.dart';
 
 class Home extends StatefulWidget {
@@ -30,6 +33,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   UserProfileDataHive? profileData;
   UserDataHive? userData;
+  TokenModel? tokens;
 
   TextEditingController searchController = TextEditingController();
   @override
@@ -44,6 +48,7 @@ class _HomeState extends State<Home> {
             builder: (context, boxdetails, _) {
               profileData = box.get(userProfileKey);
               userData = box.get(userDataKey);
+              tokens = box.get(tokenHiveKey);
               return Scaffold(
                 appBar: AppBar(
                   backgroundColor: Colors.white,
@@ -87,7 +92,11 @@ class _HomeState extends State<Home> {
                   ),
                   actions: [
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        // Provider.of<UploadFileService>(context, listen: false)
+                        //     .getUploadedPostsOfUser(
+                        //         userData!.id!, tokens!.accessToken!);
+                      },
                       splashRadius: 24,
                       splashColor: primaryColor3,
                       icon: const Icon(

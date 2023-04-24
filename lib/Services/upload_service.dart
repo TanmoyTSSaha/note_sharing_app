@@ -139,4 +139,39 @@ class UploadFileService extends ChangeNotifier {
     }
     return false;
   }
+
+  Future<List<PostModel>> getUploadedPostsOfUser(
+      int uid, String userToken) async {
+    try {
+      http.Response response = await http.get(
+          Uri.parse(
+              "https://note-sharing-application.onrender.com/post/user=$uid"),
+          headers: {
+            'Content-Type': 'application/json',
+            "Authorization": 'Bearer $userToken'
+          });
+      log("respose -------" + response.statusCode.toString());
+      if (response.statusCode == 200) {
+        Map posts = jsonDecode(response.body) as Map;
+        List postData = posts["data"];
+        // log(postData.toString());
+        List<PostModel> myPosts = [];
+        postData.forEach(
+          (element) {
+            var a = PostModel.fromMap(element);
+            myPosts.add(a);
+          },
+        );
+        log("my posts are ---$myPosts");
+        return myPosts;
+      } else {
+        toastMessage("Failed to load");
+        log("status code while getting post is not 200");
+      }
+    } catch (e) {
+      toastMessage(e.toString());
+      toastMessage("Somehting went wrong");
+    }
+    return [];
+  }
 }

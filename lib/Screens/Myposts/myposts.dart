@@ -1,137 +1,103 @@
-import 'dart:convert';
 import 'dart:developer';
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:note_sharing_app/Hive/token/token.dart';
+import 'package:note_sharing_app/Hive/logged_in.dart';
+import 'package:note_sharing_app/Services/upload_service.dart';
 import 'package:note_sharing_app/main.dart';
+import 'package:note_sharing_app/models/posts_model.dart';
 import 'package:note_sharing_app/shared.dart';
-import '../../constants.dart';
-import '../../models/posts_model.dart';
-import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
-class PostsPage extends StatefulWidget {
-  const PostsPage({super.key});
+import '../../Hive/token/token.dart';
+import '../../constants.dart';
+
+class MyUploadedPosts extends StatefulWidget {
+  const MyUploadedPosts({super.key});
 
   @override
-  State<PostsPage> createState() => _PostsPageState();
+  State<MyUploadedPosts> createState() => _MyUploadedPostsState();
 }
 
-class _PostsPageState extends State<PostsPage> {
-  late Future<AllPostsModel?> allPosts;
-  late TokenModel a;
-  Future<AllPostsModel?> getPosts({required String userToken}) async {
-    try {
-      http.Response response = await http.get(
-        Uri.parse("https://note-sharing-application.onrender.com/post/"),
-        headers: {
-          'Content-Type': 'application/json',
-          "Authorization": 'Bearer $userToken'
-        },
-      );
-      log("---  " + response.body.toString());
-      Map<String, dynamic> data =
-          jsonDecode(response.body) as Map<String, dynamic>;
-      if (response.statusCode == 200) {
-        Map<String, dynamic> posts =
-            jsonDecode(response.body) as Map<String, dynamic>;
-        var a = AllPostsModel.fromMap(posts);
-        return a;
-      } else {
-        toastMessage("Failed to load");
-        log("status code while getting post is not 200");
-      }
-    } catch (e) {
-      toastMessage("Failed to load");
-      log("error to get posts---" + e.toString());
-      toastMessage(e.toString());
-    }
-    return null;
-  }
-
+class _MyUploadedPostsState extends State<MyUploadedPosts> {
+  late Future<List<PostModel?>> myPosts;
+  UserDataHive userdata = box.get(userDataKey);
+  TokenModel token = box.get(tokenHiveKey);
   assignValue() async {
-    a = box.get(tokenHiveKey);
-    allPosts = getPosts(userToken: a.accessToken!);
+    myPosts = Provider.of<UploadFileService>(context, listen: false)
+        .getUploadedPostsOfUser(userdata.id!, token.accessToken!);
   }
 
   @override
   void initState() {
     super.initState();
     assignValue();
-    log(allPosts.toString());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: ArrowBackButton(
-            iconColor: primaryColor1,
-          ),
-          leadingWidth: 80,
-          titleSpacing: 0,
-          title: Text(
-            "Posts",
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              color: textColorBlack,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          // actions: [
-          //   IconButton(
-          //     onPressed: () {},
-          //     splashRadius: 24,
-          //     splashColor: primaryColor3,
-          //     icon: const Icon(
-          //       CupertinoIcons.bell_fill,
-          //       color: primaryColor1,
-          //       size: 24,
-          //     ),
-          //   ),
-          // ],
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        leading: const ArrowBackButton(
+          iconColor: primaryColor1,
         ),
-        body: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Container(
-            height: Get.height - 80,
-            width: Get.width,
-            padding: const EdgeInsets.all(16),
-            child: allPosts != null
-                ? FutureBuilder(
-                    initialData: null,
-                    future: allPosts,
-                    builder: (context, AsyncSnapshot<AllPostsModel?> snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
-                      }
-
-                      return ListView.separated(
-                          itemBuilder: (context, index) {
-                            return Text(snapshot.data!.data![0].toString());
-                          },
-                          separatorBuilder: (contex, index) {
-                            return SizedBox(
-                              height: 4,
-                            );
-                          },
-                          itemCount: snapshot.data!.data!.length);
-                    },
-                  )
-                : Center(
-                    child: CircularProgressIndicator.adaptive(
-                    valueColor: AlwaysStoppedAnimation(primaryColor1),
-                  )),
+        title: Text(
+          "My Uploaded Posts ",
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            color: textColorBlack,
+            fontWeight: FontWeight.w600,
           ),
-        ));
+        ),
+      ),
+      body: SingleChildScrollView(
+          child: Container(
+              margin: EdgeInsets.all(16),
+              height: Get.height - 80,
+              width: Get.width,
+              child: FutureBuilder(
+                initialData: null,
+                future: myPosts,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator.adaptive(),
+                    );
+                  }
+                  log("------" + snapshot.data.toString());
+                  if (snapshot.data!.isEmpty)
+                    return Center(
+                      child: Text("No posts Uploaded yet"),
+                    );
+                  return ListView.separated(
+                      itemBuilder: (context, index) {
+                        return Post(post: snapshot.data![index]);
+
+                        // return Text(snapshot.data![index].toString());
+                      },
+                      separatorBuilder: (context, index) {
+                        return SizedBox(
+                          height: 4,
+                        );
+                      },
+                      itemCount: snapshot.data!.length);
+                },
+              ))),
+    );
   }
 }
 
-class Posts extends StatelessWidget {
-  AllPostsModel post;
-  Posts({
+class Post extends StatelessWidget {
+  final UserDataHive userdata = box.get(userDataKey);
+
+  final PostModel? post;
+  Post({
     super.key,
     required this.post,
   });
@@ -158,7 +124,7 @@ class Posts extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Anjali Jaiswal",
+                    "${userdata.first_name} ${userdata.last_name}",
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -190,27 +156,18 @@ class Posts extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            post.data![0].post_content!,
+            post!.post_content!,
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: textColorBlack,
             ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            post.data![0].post_content!,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              color: textColorBlack,
-            ),
-          ),
-          const SizedBox(height: 12),
-          post.data![0].post_image != null
+          const SizedBox(height: 16),
+          post!.post_image != null
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.asset("assets/images/book.jpg"),
+                  child: Image.network(post!.post_image!),
                 )
               : const SizedBox(
                   height: 0,

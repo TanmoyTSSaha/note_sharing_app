@@ -1,10 +1,15 @@
 import 'dart:developer';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:note_sharing_app/Hive/logged_in.dart';
+import 'package:note_sharing_app/Hive/token/token.dart';
 import 'package:note_sharing_app/Screens/Home/home.dart';
 import 'package:note_sharing_app/Services/login_service.dart';
+import 'package:note_sharing_app/Services/upload_service.dart';
+import 'package:note_sharing_app/main.dart';
 import 'package:note_sharing_app/shared.dart';
 import 'package:provider/provider.dart';
 import '../../Hive/user_profile.dart';
@@ -13,12 +18,8 @@ import '../../constants.dart';
 class CreateProfileScreen extends StatefulWidget {
   final bool isNew;
   final UserDataHive userData;
-  final UserProfileDataHive? profileData;
   const CreateProfileScreen(
-      {super.key,
-      required this.userData,
-      required this.isNew,
-      this.profileData});
+      {super.key, required this.userData, required this.isNew});
 
   @override
   State<CreateProfileScreen> createState() => _CreateProfileScreenState();
@@ -34,24 +35,27 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
   GlobalKey<FormState> _createProfileScreen = GlobalKey<FormState>();
   int? gender;
   bool isButtonPressed = false;
-  UserProfileDataHive? profileData;
+  UserProfileDataHive? profileData = box.get(userProfileKey);
+  TokenModel? token;
+  XFile? imageFile;
+
   @override
   void initState() {
     super.initState();
     log("init state");
-    if (widget.profileData != null) {
-      log("message");
-      courseController.text = widget.profileData!.course!;
-      collegeController.text = widget.profileData!.university!;
-      yearController.text = widget.profileData!.year!.toString();
-      descController.text = widget.profileData!.description!;
-      gender = widget.profileData!.gender == 'Male'
+    token = box.get(tokenHiveKey);
+    if (profileData != null) {
+      courseController.text = profileData!.course!;
+      collegeController.text = profileData!.university!;
+      yearController.text = profileData!.year!.toString();
+      descController.text = profileData!.description!;
+      gender = profileData!.gender == 'Male'
           ? 1
-          : widget.profileData!.gender == 'Female'
+          : profileData!.gender == 'Female'
               ? 2
               : 3;
-      // profilePicUrl = widget.profileData!.profile_image!;
-      collegeId = widget.profileData!.collegeID;
+      profilePicUrl = profileData!.profile_image!;
+      collegeId = profileData!.collegeID;
     }
   }
 
@@ -91,38 +95,47 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                     Stack(
                       alignment: Alignment.bottomRight,
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child:
-                              // profile != null
-                              // ? const Icon(Icons.person)
-                              Image.asset(
-                            // File(profile!.path),
-                            "assets/images/anjali.png",
-                            height: Get.height * 0.125,
-                            width: Get.height * 0.125,
-                            fit: BoxFit.cover,
-                            filterQuality: FilterQuality.high,
+                        SizedBox(
+                          height: Get.height * 0.125,
+                          width: Get.height * 0.125,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: imageFile != null
+                                ? Image.file(
+                                    File(imageFile!.path),
+                                    height: Get.height * 0.125,
+                                    width: Get.height * 0.125,
+                                    fit: BoxFit.cover,
+                                  )
+                                : profilePicUrl != null
+                                    ? Image.network(profilePicUrl!)
+                                    : Image.asset(
+                                        // File(profile!.path),
+                                        "assets/images/anjali.png",
+                                        height: Get.height * 0.125,
+                                        width: Get.height * 0.125,
+                                        fit: BoxFit.cover,
+                                        filterQuality: FilterQuality.high,
+                                      ),
                           ),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(4),
                           child: Container(
-                              height: 24,
-                              width: 24,
+                              height: 32,
+                              width: 32,
                               decoration: BoxDecoration(
                                 color: primaryColor1,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: IconButton(
                                 onPressed: () async {
-                                  // profile = await UploadFileService()
-                                  //     .uploadFile()
-                                  //     .then((value) {
-                                  //   if (value != null) {
-                                  //     profilePicUrl = value.path;
-                                  //   }
-                                  // });
+                                  var a = await UploadFileService().pickImage();
+                                  if (a != null) {
+                                    setState(() {
+                                      imageFile = a;
+                                    });
+                                  }
                                 },
                                 icon: const Icon(
                                   Icons.edit,
@@ -203,46 +216,76 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                             : () {
                                 if (_createProfileScreen.currentState!
                                     .validate()) {
+                                  FocusScope.of(context).unfocus();
+
                                   setState(() {
                                     isButtonPressed = true;
+                                    log("button status changed to true");
                                   });
                                   // if (profile == null) {
                                   //   Fluttertoast.showToast(
                                   //       msg: "please upload image");
                                   // } else {
-                                  try {
-                                    loginService.createProfile(
+                                  if (widget.isNew == false) {
+                                    log("update screen for profile details");
+                                    loginService.updateProfileDetails2(
                                         course: courseController.text,
+                                        usertoken: token!.accessToken,
                                         desc: descController.text,
                                         university: collegeController.text,
-                                        userId: widget.userData.id,
-                                        // profileImage: File(profile!.path),
-                                        year: int.parse(yearController.text),
+                                        userId: widget.userData.id.toString(),
+                                        profileImage: File(imageFile!.path),
+                                        year: (yearController.text),
                                         gender: gender == 1
                                             ? "Male"
                                             : gender == 2
                                                 ? "Female"
                                                 : "Other");
                                     profileData = loginService.userProfile;
-                                    if (profileData != null) {
+                                    if (profileData != null &&
+                                        widget.isNew == true) {
                                       setState(() {
                                         isButtonPressed = false;
                                       });
                                       log("-------" + profileData.toString());
-                                      Get.offAll(Home(
-                                        // userData: loginService.userData!,
-                                        // userProfileData: profileData,
-                                      ));
+                                      Get.offAll(Home());
                                     } else {
                                       setState(() {
                                         isButtonPressed = false;
                                       });
                                     }
-                                  } catch (e) {
-                                    setState(() {
-                                      isButtonPressed = false;
-                                    });
+                                  } else {
+                                    loginService.createProfile(
+                                        course: courseController.text,
+                                        usertoken: token!.accessToken,
+                                        desc: descController.text,
+                                        university: collegeController.text,
+                                        userId: widget.userData.id.toString(),
+                                        // profileImage: File(profile!.path),
+                                        year: (yearController.text),
+                                        gender: gender == 1
+                                            ? "Male"
+                                            : gender == 2
+                                                ? "Female"
+                                                : "Other");
+                                    profileData = loginService.userProfile;
+                                    if (profileData != null &&
+                                        widget.isNew == true) {
+                                      setState(() {
+                                        isButtonPressed = false;
+                                      });
+                                      log("-------" + profileData.toString());
+                                      Get.offAll(Home(
+                                          // userData: loginService.userData!,
+                                          // userProfileData: profileData,
+                                          ));
+                                    } else {
+                                      setState(() {
+                                        isButtonPressed = false;
+                                      });
+                                    }
                                   }
+
                                   // }
                                 }
                               },
