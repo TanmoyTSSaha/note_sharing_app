@@ -78,7 +78,6 @@ class _MyUploadedPostsState extends State<MyUploadedPosts> {
                   return ListView.separated(
                       itemBuilder: (context, index) {
                         return Post(post: snapshot.data![index]);
-
                         // return Text(snapshot.data![index].toString());
                       },
                       separatorBuilder: (context, index) {
