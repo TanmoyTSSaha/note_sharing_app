@@ -1,9 +1,18 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:note_sharing_app/Services/qna_service.dart';
+import 'package:note_sharing_app/models/Qna_model.dart';
 import 'package:http/http.dart' as http;
 
 import '../../Hive/token/token.dart';
@@ -11,6 +20,9 @@ import '../../constants.dart';
 import '../../main.dart';
 import '../../models/qna_model.dart';
 import '../../shared.dart';
+
+import '../Profile/profile_screen.dart';
+
 
 class QnA_Forum extends StatefulWidget {
   const QnA_Forum({super.key});
@@ -23,6 +35,12 @@ class _QnA_ForumState extends State<QnA_Forum> {
   late Future<QnaModel?> qnaModel;
   TokenModel userToken = box.get(tokenHiveKey);
   Future<QnaModel?> getQnAPosts() async {
+/*QnaModel? qnaModel;
+
+class _QnA_ForumState extends State<QnA_Forum> {
+  TokenModel userToken = box.get(tokenHiveKey);
+  Future getQnAPosts() async {*/
+
     try {
       http.Response qnaPosts = await http.get(
         Uri.parse("https://note-sharing-application.onrender.com/qna/"),
@@ -36,6 +54,7 @@ class _QnA_ForumState extends State<QnA_Forum> {
             jsonDecode(qnaPosts.body) as Map<String, dynamic>;
         var a = QnaModel.fromJson(qnaPostsMap);
         return a;
+//        qnaModel = QnaModel.fromJson(qnaPostsMap);
       } else {
         log("Empty data QnA Posts");
       }
@@ -47,11 +66,13 @@ class _QnA_ForumState extends State<QnA_Forum> {
 
   assignQna() {
     qnaModel = getQnAPosts();
+
   }
 
   @override
   void initState() {
     assignQna();
+
     super.initState();
   }
 
@@ -65,6 +86,7 @@ class _QnA_ForumState extends State<QnA_Forum> {
           width: Get.width,
           padding: const EdgeInsets.all(16),
           child: qnaModel != null
+
               ? FutureBuilder(
                   initialData: null,
                   future: qnaModel,
@@ -95,6 +117,28 @@ class _QnA_ForumState extends State<QnA_Forum> {
                       ),
                     );
                   })
+
+              ? ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: qnaModel!.data!.length,
+                  itemBuilder: (context, index) {
+                    log(qnaModel!.data![index].user.toString());
+                    return QnaPost(
+                      user_id: qnaModel!.data![index].user!,
+                      index: index,
+                      userAccessToken: userToken.accessToken!,
+                    );
+                  },
+                  separatorBuilder: (context, index) => Container(
+                    height: 6,
+                    width: Get.width,
+                    decoration: BoxDecoration(
+                      color: primaryColor3.withOpacity(0.25),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                )
               : Center(
                   child: CircularProgressIndicator.adaptive(
                     valueColor: AlwaysStoppedAnimation(primaryColor1),
@@ -108,6 +152,7 @@ class _QnA_ForumState extends State<QnA_Forum> {
 
 class QnaPost extends StatefulWidget {
   QnaData qnaData;
+
   String userAccessToken;
   int user_id;
   int index;
@@ -133,6 +178,7 @@ class _QnaPostState extends State<QnaPost> {
     http.Response likePostResponse = await http.post(
       Uri.parse(
           "https://note-sharing-application.onrender.com/post/post=${widget.qnaData.qnaId}/like/"),
+
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${widget.userAccessToken}'
@@ -146,6 +192,7 @@ class _QnaPostState extends State<QnaPost> {
     http.Response deleteLikePostResponse = await http.delete(
       Uri.parse(
           "https://note-sharing-application.onrender.com/qna/post=${widget.qnaData.qnaId}/like/"),
+
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${widget.userAccessToken}'
@@ -160,6 +207,7 @@ class _QnaPostState extends State<QnaPost> {
       http.Response like = await http.get(
         Uri.parse(
             "https://note-sharing-application.onrender.com/qna/qna=${widget.qnaData.qnaId}/like"),
+
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${widget.userAccessToken}'
@@ -211,6 +259,7 @@ class _QnaPostState extends State<QnaPost> {
       http.Response userProfileResponse = await http.get(
         Uri.parse(
             "https://note-sharing-application.onrender.com/user/api/profile/user=${widget.qnaData.user}"),
+
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${widget.userAccessToken}'
@@ -294,6 +343,7 @@ class _QnaPostState extends State<QnaPost> {
                   //     color: primaryColor3,
                   //   ),
                   // ),
+
                 ],
               ),
               const Spacer(),
@@ -311,6 +361,7 @@ class _QnaPostState extends State<QnaPost> {
           const SizedBox(height: 12),
           Text(
             widget.qnaData.questionTitle!,
+
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -320,6 +371,7 @@ class _QnaPostState extends State<QnaPost> {
           const SizedBox(height: 12),
           Text(
             widget.qnaData.questionDescription!,
+
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w400,
@@ -332,6 +384,7 @@ class _QnaPostState extends State<QnaPost> {
                   borderRadius: BorderRadius.circular(10),
                   child: Image.network(
                       "https://note-sharing-application.onrender.com${widget.qnaData.questionImage}"),
+
                 )
               : const SizedBox(
                   height: 0,

@@ -13,8 +13,13 @@ import '../../Hive/user_profile.dart';
 import '../Myposts/myposts.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final UserDataHive userData;
-  const ProfileScreen({super.key, required this.userData});
+ final UserDataHive? userData;
+ final UserProfileDataHive? userProfileData;
+ const ProfileScreen(
+     {super.key, this.userProfileData, this.userData});
+
+  // final UserDataHive userData;
+  // const ProfileScreen({super.key, required this.userData});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -37,6 +42,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               leading: const ArrowBackButton(
                 iconColor: primaryColor1,
               ),
+
+//              SizedBox(
+//                height: 16,
+//                width: Get.width,
+//              ),
+//              Text(
+//                "${widget.userData!.first_name} ${widget.userData!.last_name!}",
+
               title: Text(
                 "Profile",
                 style: GoogleFonts.poppins(
@@ -58,19 +71,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     SizedBox(
                       height: height10,
                     ),
-                    Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        Container(
+                    Container(
                           decoration: BoxDecoration(
-                              border: Border.all(color: primaryColor2),
                               borderRadius: BorderRadius.circular(12)),
                           height: Get.height * 0.125,
                           width: Get.height * 0.125,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: Image.asset(
-                              "assets/images/anjali.png",
+                            child: Image.network(
+                              "https://note-sharing-application.onrender.com${widget.userProfileData!.profile_image}",
                               // widget.userProfileData!.profile_image!,
                               height: Get.height * 0.125,
                               width: Get.height * 0.125,
@@ -80,18 +89,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Icons.error_outline,
                                 color: primaryColor2,
                               ),
-                              filterQuality: FilterQuality.high,
+
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    SizedBox(
+                      SizedBox(
                       height: 16,
                       width: Get.width,
                     ),
                     Text(
-                      "${widget.userData.first_name} ${widget.userData.last_name!}",
+                      "${widget.userData!.first_name} ${widget.userData!.last_name!}",
                       style: GoogleFonts.poppins(
                         fontSize: 16,
                         color: textColorBlack,
@@ -123,8 +130,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     CustomListTile(
                       onTap: () {
                         Get.to(() => CreateProfileScreen(
+
+                          pageName: "Update Profile",
+                              profileData: userProfileData,
                               isNew: false,
-                              userData: widget.userData,
+                              userData: widget.userData!,
                             ));
                       },
                       leadingIcon: Icons.person,
@@ -172,9 +182,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
+
+//              SizedBox(
+//                height: height10 * 2,
+//              ),
+//              CustomListTile(
+//                onTap: () {
+//                  Get.to(() => CreateProfileScreen(
+//                        profileData: widget.userProfileData,
+//                        isNew: false,
+//                        userData: widget.userData!,
+//                      ));
+//                },
+//                leadingIcon: Icons.person,
+//                title: "Profile Details",
+//              ),
+//              SizedBox(
+//                height: height10,
+//              ),
+//              CustomListTile(
+//                onTap: () {},
+//                leadingIcon: Icons.upload_file_rounded,
+//                title: "Uploaded Files",
+//              ),
+//              SizedBox(
+//                height: height10,
+//              ),
+//              CustomListTile(
+//                onTap: () {},
+//                leadingIcon: Icons.favorite,
+//                title: "Saved Files",
+//              ),
+//              SizedBox(
+//                height: height10,
+//              ),
+//              CustomListTile(
+//                onTap: () {
+//                  Get.to(() => const SettingScreen());
+//                },
+//                leadingIcon: Icons.settings,
+//                title: "Settings",
+//              ),
+//              SizedBox(
+//                height: height10 * 2,
+//              ),
+//              CustomElevatedButton(
+//                  child: Text("Logout", style: GoogleFonts.poppins()),
+//                  onPressed: () {})
+//            ],
+//          ),
+//        ),
+//      ),
+//    );
+
             ),
           );
         });
+
   }
 }
 

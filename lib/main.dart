@@ -5,7 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:note_sharing_app/Screens/Home/post_r.dart';
+
 import 'package:note_sharing_app/Services/upload_service.dart';
+
+import 'package:note_sharing_app/Screens/Bottom%20Navigation/bottom_navigation_bar.dart';
+
 import 'package:provider/provider.dart';
 
 import 'package:note_sharing_app/Hive/logged_in.dart';

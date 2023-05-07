@@ -7,6 +7,8 @@ import 'package:note_sharing_app/Hive/logged_in.dart';
 import 'package:note_sharing_app/constants.dart';
 import 'package:note_sharing_app/main.dart';
 import 'package:http/http.dart' as http;
+
+import 'package:note_sharing_app/models/profile_model.dart';
 import 'package:note_sharing_app/shared.dart';
 
 import '../Hive/token/token.dart';
@@ -95,11 +97,11 @@ class LoginService extends ChangeNotifier {
   loginUser({required String userName, required String password}) async {
     try {
       http.Response loginResponse = await http.post(
-          Uri.parse(refreshToken
-              ? "https://note-sharing-application.onrender.com/user/api/login/refresh:refresh_token"
-              : "https://note-sharing-application.onrender.com/user/api/login/"),
-          headers: {'Content-Type': 'application/json', 'Charset': 'utf-8'},
-          body: jsonEncode({"username": userName, "password": password}));
+        Uri.parse(
+            "https://note-sharing-application.onrender.com/user/api/login/"),
+        headers: {'Content-Type': 'application/json', 'Charset': 'utf-8'},
+        body: jsonEncode({"username": userName, "password": password}),
+      );
 
       Map<String, dynamic> data =
           jsonDecode(loginResponse.body) as Map<String, dynamic>;
@@ -144,6 +146,8 @@ class LoginService extends ChangeNotifier {
           jsonDecode(loginResponse.body) as Map<String, dynamic>;
       Map<String, dynamic> data = mapData["data"];
       log("user data respose --${data}");
+      data = data['data'];
+
       if (data.containsKey("id")) {
         userData = UserDataHive.fromMap(data);
         box.put(userDataKey, userData!);
@@ -320,7 +324,7 @@ class LoginService extends ChangeNotifier {
     }
   }
 
-  // getProfileDetails2() async {}
+
   getAccessToken({required String refreshToken}) async {
     try {
       http.Response accessResponse = await http.post(
@@ -336,18 +340,20 @@ class LoginService extends ChangeNotifier {
 
       if (accessData.containsKey("refresh") ||
           accessData.containsKey("access")) {
+
         userResponseToken = TokenModel.fromMap(accessData);
         box.put(tokenHiveKey, userResponseToken);
         userToken = userResponseToken!.accessToken;
         notifyListeners();
       } else {
         log('getAccessToken: Something went wrong');
-        toastMessage(
-            'Something went wrong. Please refresh again or Login again');
+        toastMessage('Something went wrong. Please refresh again or Login again');
+
       }
     } catch (e) {
       toastMessage("Something went wrong. $e");
       log('getAccessToken : ' + e.toString());
     }
   }
+
 }
