@@ -122,6 +122,35 @@ class UserLoginPageState extends State<UserLoginPage> {
                                 setState(() {
                                   isVisible = false;
                                 });
+                                FocusScope.of(context)
+                                    .requestFocus(FocusNode());
+
+                                await loginService.loginUser(
+                                    userName: userNameController.text.trim(),
+                                    password: passwordController.text.trim());
+                                await loginService.getProfileDetails();
+                                await loginService.getUserData();
+                                isvalidUser = loginService.isLoggedIn;
+                                if (isvalidUser!) {
+                                  log("yes user valid");
+                                  setState(() {
+                                    isButtonPressed = false;
+                                  });
+                                  Get.offAll(box.get(userProfileKey) != null
+                                      ? Home(
+                                          // userData: box.get(userDataKey),
+                                          // userProfileData:
+                                          //     loginService.userProfile,
+                                          )
+                                      : CreateProfileScreen(
+                                          isNew: true,
+                                          userData: box.get(userDataKey),
+                                        ));
+                                  isvalidUser = true;
+                                } else {
+                                  log("user not valid");
+                                  Fluttertoast.showToast(
+                                      msg: "Wrong Credentials");
                               },
                               icon: const Icon(
                                 Icons.visibility,

@@ -29,9 +29,42 @@ class PostsPage extends StatefulWidget {
   State<PostsPage> createState() => _PostsPageState();
 }
 
-AllPostsModel? allPosts;
-
 class _PostsPageState extends State<PostsPage> {
+  late Future<AllPostsModel?> allPosts;
+  late TokenModel a;
+  Future<AllPostsModel?> getPosts({required String userToken}) async {
+    try {
+      http.Response response = await http.get(
+        Uri.parse("https://note-sharing-application.onrender.com/post/"),
+        headers: {
+          'Content-Type': 'application/json',
+          "Authorization": 'Bearer $userToken'
+        },
+      );
+      log("---  " + response.body.toString());
+      Map<String, dynamic> data =
+          jsonDecode(response.body) as Map<String, dynamic>;
+      if (response.statusCode == 200) {
+        Map<String, dynamic> posts =
+            jsonDecode(response.body) as Map<String, dynamic>;
+        log(posts.toString());
+        var a = AllPostsModel.fromMap(posts);
+        return a;
+      } else {
+        toastMessage("Failed to load");
+        log("status code while getting post is not 200");
+      }
+    } catch (e) {
+      toastMessage("Failed to load");
+      log("error to get posts---" + e.toString());
+      toastMessage(e.toString());
+    }
+    return null;
+  }
+
+  assignValue() async {
+    a = box.get(tokenHiveKey);
+    allPosts = getPosts(userToken: a.accessToken!);
   TokenModel userToken = box.get(tokenHiveKey);
   UserProfileDataHive? profileData;
 
@@ -69,22 +102,49 @@ class _PostsPageState extends State<PostsPage> {
                 'https://note-sharing-application.onrender.com${profileData!.profile_image}'),
           ),
         ),
-        leadingWidth: 80,
-        titleSpacing: 0,
-        centerTitle: false,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            widget.userData != null
-                ? Text(
-                    "Hi ${widget.userData!.first_name} ",
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: textColorBlack,
-                    ),
+        body: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Container(
+            height: Get.height - 80,
+            width: Get.width,
+            padding: const EdgeInsets.all(16),
+            child: allPosts != null
+                ? FutureBuilder(
+                    initialData: null,
+                    future: allPosts,
+                    builder: (context, AsyncSnapshot<AllPostsModel?> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+
+                      return ListView.separated(
+                          itemBuilder: (context, index) {
+                            // return Text(snapshot.data!.data![0].toString());
+                            return Posts(post: snapshot.data!.data![0]);
+                          },
+                          separatorBuilder: (contex, index) {
+                            return SizedBox(
+                              height: 4,
+                            );
+                          },
+                          itemCount: snapshot.data!.data!.length);
+                    },
+//        leadingWidth: 80,
+//        titleSpacing: 0,
+//        centerTitle: false,
+//        title: Column(
+//          crossAxisAlignment: CrossAxisAlignment.start,
+//          mainAxisAlignment: MainAxisAlignment.center,
+//          mainAxisSize: MainAxisSize.max,
+//          children: [
+//            widget.userData != null
+//                ? Text(
+//                    "Hi ${widget.userData!.first_name} ",
+//                    style: GoogleFonts.poppins(
+//                      fontSize: 16,
+//                      fontWeight: FontWeight.w600,
+//                      color: textColorBlack,
+//                    ),
                   )
                 : TextButton(
                     onPressed: () => Get.to(() => ProfileScreen(
@@ -159,6 +219,7 @@ class _PostsPageState extends State<PostsPage> {
   
   }
 }
+
 
 class Posts extends StatefulWidget {
   String userAccessToken;
@@ -412,7 +473,7 @@ class _PostsState extends State<Posts> {
           ),
           const SizedBox(height: 12),
           Text(
-            allPosts!.data![0].post_content!,
+            post.post_content!,
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -421,6 +482,7 @@ class _PostsState extends State<Posts> {
           ),
           const SizedBox(height: 12),
           Text(
+//            post.post_content!,
             allPosts!.data![widget.index].post_content!,
             style: GoogleFonts.poppins(
               fontSize: 12,
@@ -429,6 +491,7 @@ class _PostsState extends State<Posts> {
             ),
           ),
           const SizedBox(height: 12),
+//          post.post_image != null
           allPosts!.data![widget.index].post_image != null
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(10),
@@ -482,6 +545,7 @@ class _PostsState extends State<Posts> {
                       ),
                       const SizedBox(width: 8),
                       Text(
+//                        "${post.postLiked??0} likes",
                         "$likeCount likes",
                         style: GoogleFonts.poppins(
                           fontSize: 12,

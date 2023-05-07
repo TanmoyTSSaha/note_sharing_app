@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,6 +10,7 @@ import 'package:note_sharing_app/constants.dart';
 import 'package:note_sharing_app/main.dart';
 import 'package:note_sharing_app/shared.dart';
 import '../../Hive/user_profile.dart';
+import '../Myposts/myposts.dart';
 
 class ProfileScreen extends StatefulWidget {
  final UserDataHive? userData;
@@ -30,17 +29,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late UserProfileDataHive userProfileData;
 
   @override
-  void initState() {
-    super.initState();
-    userProfileData = box.get(userProfileKey);
-    log(userProfileData.toString());
-  }
-
-  @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<Box>(
         valueListenable: box.listenable(),
         builder: (context, hiveBox, _) {
+          userProfileData = box.get(userProfileKey);
+
           return Scaffold(
             appBar: AppBar(
               elevation: 0,
@@ -95,6 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Icons.error_outline,
                                 color: primaryColor2,
                               ),
+
                             ),
                           ),
                         ),
@@ -112,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      userProfileData.course!,
+                      userProfileData.course ?? "-",
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: textColorBlack,
@@ -121,7 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      userProfileData.description!,
+                      userProfileData.description ?? "-",
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
@@ -135,6 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     CustomListTile(
                       onTap: () {
                         Get.to(() => CreateProfileScreen(
+
                           pageName: "Update Profile",
                               profileData: userProfileData,
                               isNew: false,
@@ -148,7 +144,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       height: height10,
                     ),
                     CustomListTile(
-                      onTap: () {},
+                      onTap: () {
+                        Get.to(MyUploadedPosts());
+                      },
                       leadingIcon: Icons.upload_file_rounded,
                       title: "Uploaded Files",
                     ),
@@ -177,6 +175,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Text("Logout", style: GoogleFonts.poppins()),
                         onPressed: () {
                           Get.offAll(UserLoginPage());
+                          box.delete(userDataKey);
+                          box.delete(userProfileKey);
+                          box.delete(tokenHiveKey);
                         })
                   ],
                 ),

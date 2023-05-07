@@ -65,6 +65,7 @@ class MyApp extends StatelessWidget {
             // log("user data----$temp");
             // return UserLoginPage();
             return temp != null && profile != null
+
                 ? CustomBottomNavBar(
                   userData: temp,
                 )

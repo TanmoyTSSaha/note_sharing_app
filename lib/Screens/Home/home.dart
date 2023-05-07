@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:note_sharing_app/Hive/token/token.dart';
 import 'package:note_sharing_app/Hive/user_profile.dart';
 
 import 'package:note_sharing_app/Screens/Home/posts_screen.dart';
@@ -15,7 +15,6 @@ import 'package:note_sharing_app/Screens/Bottom%20Navigation/bottom_navigation_b
 
 import 'package:note_sharing_app/Screens/Home/subject_shelf.dart';
 import 'package:note_sharing_app/Screens/Profile/profile_screen.dart';
-import 'package:note_sharing_app/Screens/Register/user_login.dart';
 import 'package:note_sharing_app/Screens/upload/upload_post.dart';
 import 'package:note_sharing_app/Services/upload_service.dart';
 import 'package:note_sharing_app/constants.dart';
@@ -23,6 +22,7 @@ import 'package:note_sharing_app/main.dart';
 import '../../Hive/logged_in.dart';
 
 class Home extends StatefulWidget {
+
   final UserDataHive? userData;
   final UserProfileDataHive? userProfileDetail;
   const Home({super.key, this.userData, this.userProfileDetail});
@@ -33,6 +33,9 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   UserProfileDataHive? profileData;
+  UserDataHive? userData;
+  TokenModel? tokens;
+
   TextEditingController searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -44,6 +47,7 @@ class _HomeState extends State<Home> {
           top: 32,
         ),
         child: ValueListenableBuilder<Box>(
+
 
           valueListenable: box.listenable(),
           builder: (context, boxdetails, _) {
@@ -158,22 +162,43 @@ class _HomeState extends State<Home> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextFormField(
-                        controller: searchController,
+                      Text(
+                        "Hi ${userData!.first_name} ",
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           color: primaryColor1,
                         ),
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.all(8),
-                          prefixIcon: const Icon(
-                            CupertinoIcons.search,
-                            color: primaryColor3,
-                            size: 24,
-                          ),
-                          hintText: "Search",
-                          hintStyle: GoogleFonts.poppins(
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    IconButton(
+                      onPressed: () {
+                        // Provider.of<UploadFileService>(context, listen: false)
+                        //     .getUploadedPostsOfUser(
+                        //         userData!.id!, tokens!.accessToken!);
+                      },
+                      splashRadius: 24,
+                      splashColor: primaryColor3,
+                      icon: const Icon(
+                        CupertinoIcons.bell_fill,
+                        color: primaryColor1,
+                        size: 24,
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: Colors.white,
+                body: Padding(
+                  padding: const EdgeInsets.only(right: 16, left: 16, top: 16),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextFormField(
+                          controller: searchController,
+                          style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color: primaryColor3,
