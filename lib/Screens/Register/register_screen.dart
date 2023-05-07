@@ -1,16 +1,13 @@
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:note_sharing_app/Hive/token/token.dart';
 import 'package:note_sharing_app/Screens/Profile/create_profile.dart';
-import 'package:note_sharing_app/Screens/Profile/profile_screen.dart';
 import 'package:note_sharing_app/Screens/Register/user_login.dart';
 import 'package:note_sharing_app/Services/login_service.dart';
 import 'package:note_sharing_app/constants.dart';
-import 'package:note_sharing_app/models/login_response_model.dart';
 import 'package:note_sharing_app/shared.dart';
 import 'package:provider/provider.dart';
 
@@ -199,7 +196,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     loginService.isUserAlreadyExist;
                                 useremailAlreadyExist =
                                     loginService.isuserEmailAlreadyExist;
-
+                                if (userData != null) {
+                                  Get.offAll(CreateProfileScreen(
+                                      userData: loginService.userData!,
+                                      isNew: true));
+                                }
                                 if (loginService.userResponseToken != null) {
                                   setState(() {
                                     isButtonPressed = false;

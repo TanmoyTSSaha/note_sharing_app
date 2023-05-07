@@ -1,9 +1,5 @@
 import 'dart:developer';
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:note_sharing_app/Hive/logged_in.dart';
@@ -12,7 +8,6 @@ import 'package:note_sharing_app/main.dart';
 import 'package:note_sharing_app/models/posts_model.dart';
 import 'package:note_sharing_app/shared.dart';
 import 'package:provider/provider.dart';
-
 import '../../Hive/token/token.dart';
 import '../../constants.dart';
 
