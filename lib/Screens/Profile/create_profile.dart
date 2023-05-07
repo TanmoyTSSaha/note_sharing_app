@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:note_sharing_app/Hive/logged_in.dart';
 import 'package:note_sharing_app/Hive/token/token.dart';
+import 'package:note_sharing_app/Screens/Bottom%20Navigation/bottom_navigation_bar.dart';
 import 'package:note_sharing_app/Screens/Home/home.dart';
 import 'package:note_sharing_app/Services/login_service.dart';
 import 'package:note_sharing_app/Services/upload_service.dart';
@@ -61,6 +62,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    log("---------------" + profilePicUrl.toString());
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -108,7 +111,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                                     fit: BoxFit.cover,
                                   )
                                 : profilePicUrl != null
-                                    ? Image.network(profilePicUrl!)
+                                    ? Image.network(
+                                        'https://note-sharing-application.onrender.com$profilePicUrl')
                                     : Image.asset(
                                         // File(profile!.path),
                                         "assets/images/anjali.png",
@@ -248,7 +252,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                                         isButtonPressed = false;
                                       });
                                       log("-------" + profileData.toString());
-                                      Get.offAll(Home());
+                                      Get.offAll(CustomBottomNavBar());
                                     } else {
                                       setState(() {
                                         isButtonPressed = false;

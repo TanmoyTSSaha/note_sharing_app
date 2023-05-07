@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:note_sharing_app/Screens/Home/post_r.dart';
 import 'package:note_sharing_app/Services/upload_service.dart';
 import 'package:provider/provider.dart';
 
@@ -14,6 +15,7 @@ import 'package:note_sharing_app/Screens/Register/user_login.dart';
 import 'package:note_sharing_app/Services/login_service.dart';
 import 'package:note_sharing_app/constants.dart';
 
+import 'Screens/Bottom Navigation/bottom_navigation_bar.dart';
 import 'Screens/Home/home.dart';
 import 'Screens/Home/posts_screen.dart';
 
@@ -61,7 +63,7 @@ class MyApp extends StatelessWidget {
             // log("user data----$temp");
             // return UserLoginPage();
             return temp != null && profile != null
-                ? Home()
+                ? CustomBottomNavBar()
                 : const UserLoginPage();
           }),
     );

@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:note_sharing_app/Screens/Home/home.dart';
+import 'package:note_sharing_app/Screens/Bottom%20Navigation/bottom_navigation_bar.dart';
 import 'package:note_sharing_app/Screens/Profile/create_profile.dart';
 import 'package:note_sharing_app/Services/login_service.dart';
 import 'package:note_sharing_app/constants.dart';
 import 'package:note_sharing_app/shared.dart';
 import 'package:provider/provider.dart';
 import '../../main.dart';
+import '../Home/post_r.dart';
 import 'register_screen.dart';
 
 class UserLoginPage extends StatefulWidget {
@@ -137,11 +138,7 @@ class UserLoginPageState extends State<UserLoginPage> {
                                     isButtonPressed = false;
                                   });
                                   Get.offAll(box.get(userProfileKey) != null
-                                      ? Home(
-                                          // userData: box.get(userDataKey),
-                                          // userProfileData:
-                                          //     loginService.userProfile,
-                                          )
+                                      ? CustomBottomNavBar()
                                       : CreateProfileScreen(
                                           isNew: true,
                                           userData: box.get(userDataKey),

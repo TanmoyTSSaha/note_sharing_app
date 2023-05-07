@@ -8,6 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:note_sharing_app/Hive/token/token.dart';
 import 'package:note_sharing_app/Hive/user_profile.dart';
+import 'package:note_sharing_app/Screens/Home/post_r.dart';
 import 'package:note_sharing_app/Screens/Home/posts_screen.dart';
 import 'package:note_sharing_app/Screens/Home/subject_shelf.dart';
 import 'package:note_sharing_app/Screens/Profile/profile_screen.dart';
@@ -46,7 +47,7 @@ class _HomeState extends State<Home> {
               userData = box.get(userDataKey);
               tokens = box.get(tokenHiveKey);
               return Scaffold(
-                appBar: AppBar(
+                /*        appBar: AppBar(
                   backgroundColor: Colors.white,
                   elevation: 0,
                   leading: GestureDetector(
@@ -103,6 +104,7 @@ class _HomeState extends State<Home> {
                     ),
                   ],
                 ),
+              */
                 backgroundColor: Colors.white,
                 body: Padding(
                   padding: const EdgeInsets.only(right: 16, left: 16, top: 16),
@@ -518,7 +520,7 @@ class _HomeState extends State<Home> {
                     ),
                   ),
                 ),
-                bottomNavigationBar: BottomAppBar(
+                /*   bottomNavigationBar: BottomAppBar(
                     child: Container(
                   height: height10 * 3.5,
                   margin: const EdgeInsets.only(bottom: 4),
@@ -529,7 +531,9 @@ class _HomeState extends State<Home> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             IconButton(
-                                onPressed: () async {},
+                                onPressed: () async {
+                                  Get.off(PostsPage2);
+                                },
                                 icon: const Icon(
                                   Icons.home,
                                   size: 24,
@@ -546,7 +550,7 @@ class _HomeState extends State<Home> {
                           children: [
                             IconButton(
                                 onPressed: () {
-                                  Get.to(PostsPage());
+                                  Get.to(PostsPage2());
                                 },
                                 icon: const Icon(
                                   Icons.dashboard,
@@ -601,6 +605,7 @@ class _HomeState extends State<Home> {
                         ),
                       ]),
                 )),
+             */
               );
             }),
       ),
