@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,14 +10,11 @@ import 'package:note_sharing_app/Hive/token/token.dart';
 import 'package:note_sharing_app/Hive/user_profile.dart';
 import 'package:note_sharing_app/Screens/Home/posts_screen.dart';
 import 'package:note_sharing_app/Screens/Home/subject_shelf.dart';
-import 'package:note_sharing_app/Screens/Myposts/myposts.dart';
 import 'package:note_sharing_app/Screens/Profile/profile_screen.dart';
-import 'package:note_sharing_app/Screens/Register/user_login.dart';
 import 'package:note_sharing_app/Screens/upload/upload_post.dart';
 import 'package:note_sharing_app/Services/upload_service.dart';
 import 'package:note_sharing_app/constants.dart';
 import 'package:note_sharing_app/main.dart';
-import 'package:provider/provider.dart';
 import '../../Hive/logged_in.dart';
 
 class Home extends StatefulWidget {

@@ -1,7 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 
 class AllPostsModel {
@@ -76,13 +73,17 @@ class PostModel {
   int? post_author;
   int? post_id;
   String? post_content;
-  PostModel({
-    this.post_file,
-    this.post_image,
-    this.post_author,
-    this.post_id,
-    this.post_content,
-  });
+  DateTime? createdTime;
+  int? postLiked;
+
+  PostModel(
+      {this.createdTime,
+      this.post_file,
+      this.post_image,
+      this.post_author,
+      this.post_id,
+      this.post_content,
+      this.postLiked});
 
   PostModel copyWith({
     String? post_file,
@@ -112,6 +113,8 @@ class PostModel {
 
   factory PostModel.fromMap(Map<String, dynamic> map) {
     return PostModel(
+      createdTime: map['post_created'] != null ? (map["post_created"]) : null,
+      postLiked: map["post_liked"] != null ? map["post_liked"] : 0,
       post_file: map['post_file'] != null ? map['post_file'] as String : null,
       post_image:
           map['post_image'] != null ? map['post_image'] as String : null,

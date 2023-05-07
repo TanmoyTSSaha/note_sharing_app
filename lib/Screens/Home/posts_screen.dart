@@ -35,6 +35,7 @@ class _PostsPageState extends State<PostsPage> {
       if (response.statusCode == 200) {
         Map<String, dynamic> posts =
             jsonDecode(response.body) as Map<String, dynamic>;
+        log(posts.toString());
         var a = AllPostsModel.fromMap(posts);
         return a;
       } else {
@@ -110,7 +111,8 @@ class _PostsPageState extends State<PostsPage> {
 
                       return ListView.separated(
                           itemBuilder: (context, index) {
-                            return Text(snapshot.data!.data![0].toString());
+                            // return Text(snapshot.data!.data![0].toString());
+                            return Posts(post: snapshot.data!.data![0]);
                           },
                           separatorBuilder: (contex, index) {
                             return SizedBox(
@@ -130,7 +132,7 @@ class _PostsPageState extends State<PostsPage> {
 }
 
 class Posts extends StatelessWidget {
-  AllPostsModel post;
+  PostModel post;
   Posts({
     super.key,
     required this.post,
@@ -190,7 +192,7 @@ class Posts extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            post.data![0].post_content!,
+            post.post_content!,
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -199,7 +201,7 @@ class Posts extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            post.data![0].post_content!,
+            post.post_content!,
             style: GoogleFonts.poppins(
               fontSize: 12,
               fontWeight: FontWeight.w400,
@@ -207,7 +209,7 @@ class Posts extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          post.data![0].post_image != null
+          post.post_image != null
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: Image.asset("assets/images/book.jpg"),
@@ -237,7 +239,7 @@ class Posts extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        "0 likes",
+                        "${post.postLiked??0} likes",
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: primaryColor1,
