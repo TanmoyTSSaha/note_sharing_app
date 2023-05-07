@@ -78,6 +78,22 @@ class LoginService extends ChangeNotifier {
     }
   }
 
+  deletePost({required int postId}) async {
+    try {
+      var response = await http.delete(
+        Uri.parse(
+            "https://note-sharing-application.onrender.com/post/post=$postId/"),
+        headers: {
+          'Content-Type': 'application/json',
+          "Authorization": 'Bearer $userToken'
+        },
+      );
+      log(response.body.toString() + "_-----on post delete respose");
+    } catch (e) {
+      toastMessage("something went wrong!!");
+    }
+  }
+
   loginUser({required String userName, required String password}) async {
     try {
       http.Response loginResponse = await http.post(
@@ -308,8 +324,7 @@ class LoginService extends ChangeNotifier {
     }
   }
 
-  getProfileDetails2() async {}
-/*
+
   getAccessToken({required String refreshToken}) async {
     try {
       http.Response accessResponse = await http.post(
@@ -323,7 +338,9 @@ class LoginService extends ChangeNotifier {
           jsonDecode(accessResponse.body) as Map<String, dynamic>;
       log(accessResponse.body.toString());
 
-      if (accessData.containsKey("refresh") || accessData.containsKey("access")) {
+      if (accessData.containsKey("refresh") ||
+          accessData.containsKey("access")) {
+
         userResponseToken = TokenModel.fromMap(accessData);
         box.put(tokenHiveKey, userResponseToken);
         userToken = userResponseToken!.accessToken;
@@ -331,11 +348,12 @@ class LoginService extends ChangeNotifier {
       } else {
         log('getAccessToken: Something went wrong');
         toastMessage('Something went wrong. Please refresh again or Login again');
+
       }
     } catch (e) {
       toastMessage("Something went wrong. $e");
       log('getAccessToken : ' + e.toString());
     }
   }
-*/
+
 }

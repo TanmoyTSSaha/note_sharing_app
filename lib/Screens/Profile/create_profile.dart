@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:note_sharing_app/Hive/logged_in.dart';
 import 'package:note_sharing_app/Hive/token/token.dart';
+import 'package:note_sharing_app/Screens/Bottom%20Navigation/bottom_navigation_bar.dart';
 import 'package:note_sharing_app/Screens/Home/home.dart';
 import 'package:note_sharing_app/Services/login_service.dart';
 import 'package:note_sharing_app/Services/upload_service.dart';
@@ -67,6 +68,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    log("---------------" + profilePicUrl.toString());
+
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -99,8 +102,31 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                     Stack(
                       alignment: Alignment.bottomRight,
                       children: [
+                        SizedBox(
+                          height: Get.height * 0.125,
+                          width: Get.height * 0.125,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: imageFile != null
+                                ? Image.file(
+                                    File(imageFile!.path),
+                                    height: Get.height * 0.125,
+                                    width: Get.height * 0.125,
+                                    fit: BoxFit.cover,
+                                  )
+                                : profilePicUrl != null
+                                    ? Image.network(
+                                        'https://note-sharing-application.onrender.com$profilePicUrl')
+                                    : Image.asset(
+                                        // File(profile!.path),
+                                        "assets/images/anjali.png",
+                                        height: Get.height * 0.125,
+                                        width: Get.height * 0.125,
+                                        fit: BoxFit.cover,
+                                        filterQuality: FilterQuality.high,
+                                      ),
 
-                        ClipRRect(
+                       /* ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child:
                               // profile != null
@@ -111,7 +137,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                             height: Get.height * 0.125,
                             width: Get.height * 0.125,
                             fit: BoxFit.cover,
-                            filterQuality: FilterQuality.high,
+                            filterQuality: FilterQuality.high, */
                           ),
                         ),
                         Padding(
@@ -300,7 +326,43 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 //                                  textStyle: const TextStyle(fontSize: 16),
 //                                )))
 
-                      onPressed: isButtonPressed
+                                  setState(() {
+                                    isButtonPressed = true;
+                                    log("button status changed to true");
+                                  });
+                                  // if (profile == null) {
+                                  //   Fluttertoast.showToast(
+                                  //       msg: "please upload image");
+                                  // } else {
+                                  if (widget.isNew == false) {
+                                    log("update screen for profile details");
+                                    loginService.updateProfileDetails2(
+                                        course: courseController.text,
+                                        usertoken: token!.accessToken,
+                                        desc: descController.text,
+                                        university: collegeController.text,
+                                        userId: widget.userData.id.toString(),
+                                        profileImage: File(imageFile!.path),
+                                        year: (yearController.text),
+                                        gender: gender == 1
+                                            ? "Male"
+                                            : gender == 2
+                                                ? "Female"
+                                                : "Other");
+                                    profileData = loginService.userProfile;
+                                    if (profileData != null &&
+                                        widget.isNew == true) {
+                                      setState(() {
+                                        isButtonPressed = false;
+                                      });
+                                      log("-------" + profileData.toString());
+                                      Get.offAll(CustomBottomNavBar());
+                                    } else {
+                                      setState(() {
+                                        isButtonPressed = false;
+                                      });
+                                    }
+                      /*onPressed: isButtonPressed
                           ? () {}
                           : () {
                               if (_createProfileScreen.currentState!
@@ -334,7 +396,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                                     Get.offAll(Home(
                                       userData: loginService.userData!,
                                       // userProfileData: profileData,
-                                    ));
+                                    ));*/
                                   } else {
                                     setState(() {
                                       isButtonPressed = false;

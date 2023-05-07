@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:note_sharing_app/Screens/Bottom%20Navigation/bottom_navigation_bar.dart';
 import 'package:note_sharing_app/Screens/Home/home.dart';
 import 'package:note_sharing_app/shared.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -122,7 +123,7 @@ class UploadFileService extends ChangeNotifier {
 
       if (response.statusCode == 201) {
         toastMessage("Posted Sucessfully");
-        Get.off(Home());
+        Get.off(CustomBottomNavBar());
         log(response.statusCode.toString());
         return true;
       } else {

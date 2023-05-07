@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:note_sharing_app/Hive/logged_in.dart';
+import 'package:note_sharing_app/Services/login_service.dart';
 import 'package:note_sharing_app/Services/upload_service.dart';
 import 'package:note_sharing_app/main.dart';
 import 'package:note_sharing_app/models/posts_model.dart';
@@ -126,23 +127,50 @@ class Post extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    "2 hours ago",
-                    style: GoogleFonts.poppins(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: primaryColor3,
-                    ),
-                  ),
+                  // Text(
+                  //   "2 hours ago",
+                  //   style: GoogleFonts.poppins(
+                  //     fontSize: 10,
+                  //     fontWeight: FontWeight.w600,
+                  //     color: primaryColor3,
+                  //   ),
+                  // ),
                 ],
               ),
               const Spacer(),
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          content: Text("Do you want to delete this post?"),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Text("Cancel",
+                                    style: TextStyle(color: Colors.black))),
+                            TextButton(
+                                onPressed: () {
+                                  Provider.of<LoginService>(context,
+                                          listen: false)
+                                      .deletePost(postId: post!.post_id!);
+                                  toastMessage("post deleted");
+
+                                  Navigator.pop(context);
+                                },
+                                child: Text("Yes",
+                                    style: TextStyle(color: primaryColor1)))
+                          ],
+                        );
+                      });
+                },
                 splashRadius: 24,
                 splashColor: primaryColor3,
                 icon: const Icon(
-                  Icons.more_horiz_outlined,
+                  Icons.delete,
                   color: primaryColor1,
                 ),
               ),
@@ -161,7 +189,24 @@ class Post extends StatelessWidget {
           post!.post_image != null
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.network(post!.post_image!),
+                  child: Image.network(
+                    "https://note-sharing-application.onrender.com${post!.post_image!}",
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: Get.width,
+                      height: Get.width,
+                      color: Colors.grey.shade300,
+                      child: Center(
+                        child: Text(
+                          'Oops! Something went wrong...',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: textColorBlack,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 )
               : const SizedBox(
                   height: 0,

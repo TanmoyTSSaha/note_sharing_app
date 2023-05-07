@@ -8,6 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:note_sharing_app/Hive/token/token.dart';
 import 'package:note_sharing_app/Hive/user_profile.dart';
+import 'package:note_sharing_app/Screens/Home/post_r.dart';
 
 import 'package:note_sharing_app/Screens/Home/posts_screen.dart';
 
@@ -47,9 +48,27 @@ class _HomeState extends State<Home> {
           top: 32,
         ),
         child: ValueListenableBuilder<Box>(
+            valueListenable: box.listenable(),
+            builder: (context, boxdetails, _) {
+              profileData = box.get(userProfileKey);
+              userData = box.get(userDataKey);
+              tokens = box.get(tokenHiveKey);
+              return Scaffold(
+                /*        appBar: AppBar(
+                  backgroundColor: Colors.white,
+                  elevation: 0,
+                  leading: GestureDetector(
+                    onTap: () {
+                      Get.to(() => ProfileScreen(
+                            userData: userData!,
+                          ));
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.white,
+                      foregroundImage: AssetImage('assets/images/anjali.png'),
 
 
-          valueListenable: box.listenable(),
+          /*valueListenable: box.listenable(),
           builder: (context, boxdetails, _) {
             profileData = box.get(userProfileKey);
             log(box.get(userProfileKey).toString());
@@ -149,7 +168,7 @@ class _HomeState extends State<Home> {
 //                      backgroundColor: Colors.white,
 //                      // foregroundImage:
 //                      //     NetworkImage(profileData!.profile_image!)
-//                      foregroundImage: AssetImage('assets/images/anjali.png'),
+//                      foregroundImage: AssetImage('assets/images/anjali.png'),*/
 
                     ),
                   ),
@@ -189,6 +208,7 @@ class _HomeState extends State<Home> {
                     ),
                   ],
                 ),
+              */
                 backgroundColor: Colors.white,
                 body: Padding(
                   padding: const EdgeInsets.only(right: 16, left: 16, top: 16),
@@ -590,11 +610,94 @@ class _HomeState extends State<Home> {
                     ],
                   ),
                 ),
-
-              ),
-            );
-          },
-        ),
+                /*   bottomNavigationBar: BottomAppBar(
+                    child: Container(
+                  height: height10 * 3.5,
+                  margin: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                                onPressed: () async {
+                                  Get.off(PostsPage2);
+                                },
+                                icon: const Icon(
+                                  Icons.home,
+                                  size: 24,
+                                  color: primaryColor1,
+                                )),
+                            const Text(
+                              "Home",
+                              style: TextStyle(color: primaryColor1),
+                            )
+                          ],
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                                onPressed: () {
+                                  Get.to(PostsPage2());
+                                },
+                                icon: const Icon(
+                                  Icons.dashboard,
+                                  size: 24,
+                                  color: primaryColor1,
+                                )),
+                            const Text(
+                              "Posts",
+                              style: TextStyle(color: primaryColor1),
+                            )
+                          ],
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                                onPressed: () async {
+                                  XFile? file =
+                                      await UploadFileService().pickImage();
+                                  if (file != null) {
+                                    Get.to(UploadPost(
+                                      file: File(file.path),
+                                    ));
+                                  }
+                                },
+                                icon: const Icon(
+                                  Icons.upload_file_rounded,
+                                  size: 24,
+                                  color: primaryColor1,
+                                )),
+                            const Text(
+                              "Upload",
+                              style: TextStyle(color: primaryColor1),
+                            )
+                          ],
+                        ),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                                onPressed: () async {},
+                                icon: const Icon(
+                                  Icons.chat,
+                                  size: 24,
+                                  color: primaryColor1,
+                                )),
+                            const Text(
+                              "Chat",
+                              style: TextStyle(color: primaryColor1),
+                            )
+                          ],
+                        ),
+                      ]),
+                )),
+             */
+              );
+            }),
 
       ),
     );
