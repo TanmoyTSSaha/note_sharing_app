@@ -8,6 +8,7 @@ import 'package:note_sharing_app/Screens/Profile/create_profile.dart';
 import 'package:note_sharing_app/Screens/Register/user_login.dart';
 import 'package:note_sharing_app/Services/login_service.dart';
 import 'package:note_sharing_app/constants.dart';
+import 'package:note_sharing_app/main.dart';
 import 'package:note_sharing_app/shared.dart';
 import 'package:provider/provider.dart';
 
@@ -30,7 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool? userNameAlreadyExist = false;
   bool? useremailAlreadyExist = false;
   bool isButtonPressed = false;
-  bool obscureText = false;
+  bool obscureText = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -176,7 +177,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   CustomElevatedButton(
                       onPressed: isButtonPressed
-                          ? () {}
+                          ? null
                           : () async {
                               if (_registerFormKey.currentState!.validate()) {
                                 setState(() {
@@ -191,26 +192,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     password: passwordController.text,
                                     userName: userNameController.text);
                                 userData = loginService.userResponseToken;
-                                log("userdata $userData");
+                                toastMessage('User Registered successfully');
+                                log("userdata---- $userData");
                                 userNameAlreadyExist =
                                     loginService.isUserAlreadyExist;
                                 useremailAlreadyExist =
                                     loginService.isuserEmailAlreadyExist;
                                 if (userData != null) {
+                                  loginService.getUserData();
+                                  log("user data is not null");
                                   Get.offAll(CreateProfileScreen(
-                                      userData: loginService.userData!,
+                                      userData: box.get(userDataKey),
                                       isNew: true));
                                 }
                                 if (loginService.userResponseToken != null) {
                                   setState(() {
                                     isButtonPressed = false;
+                                    Get.offAll(CreateProfileScreen(
+                                      isNew: true,
+                                      userData: loginService.userData!,
+                                    ));
                                   });
                                   log(userData.toString());
-                                  Get.offAll(CreateProfileScreen(
-                                    isNew: true,
-                                    userData: loginService.userData!,
-                                  ));
                                 } else {
+                                  log("user response is null....");
                                   Fluttertoast.showToast(
                                       msg: "User Already Exist");
                                   setState(() {

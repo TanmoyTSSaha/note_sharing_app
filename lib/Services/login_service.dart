@@ -62,6 +62,7 @@ class LoginService extends ChangeNotifier {
         notifyListeners();
         box.put(tokenHiveKey, userResponseToken);
         userToken = userResponseToken!.accessToken;
+        getUserData();
         notifyListeners();
       } else if (data.containsKey("username")) {
         isUserAlreadyExist = true;
@@ -268,7 +269,7 @@ class LoginService extends ChangeNotifier {
       }
     } catch (e) {
       log("while getting profile details error---$e");
-      Fluttertoast.showToast(msg: "Wrong Credentials");
+      // Fluttertoast.showToast(msg: "Wrong Credentials");
     }
   }
 
@@ -288,11 +289,11 @@ class LoginService extends ChangeNotifier {
         "Authorization": 'Bearer $usertoken'
       };
       final request = http.MultipartRequest(
-          "PUT",
+          'PUT',
           Uri.parse(
               "https://note-sharing-application.onrender.com/user/api/profile/"));
       request.files.add(await http.MultipartFile.fromPath(
-          "profile_iamge", profileImage!.path));
+          "profile_image", profileImage!.path));
       request.headers.addAll(headers);
       request.fields["user"] = userId!;
       request.fields["gender"] = gender!;

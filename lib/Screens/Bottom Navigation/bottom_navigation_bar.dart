@@ -57,7 +57,9 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
                 },
                 child: CircleAvatar(
                   backgroundColor: Colors.white,
-                  foregroundImage: AssetImage('assets/images/anjali.png'),
+                  backgroundImage: profileData!.gender == 'Female'
+                      ? AssetImage('assets/images/girl_avatar.png')
+                      : AssetImage('assets/images/boy_av.png'),
                 ),
               ),
               leadingWidth: 80,

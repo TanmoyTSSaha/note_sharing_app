@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:note_sharing_app/Hive/logged_in.dart';
+import 'package:note_sharing_app/Hive/user_profile.dart';
 import 'package:note_sharing_app/Services/login_service.dart';
 import 'package:note_sharing_app/Services/upload_service.dart';
 import 'package:note_sharing_app/main.dart';
@@ -22,7 +23,9 @@ class MyUploadedPosts extends StatefulWidget {
 class _MyUploadedPostsState extends State<MyUploadedPosts> {
   late Future<List<PostModel?>> myPosts;
   UserDataHive userdata = box.get(userDataKey);
+  UserProfileDataHive userProfile = box.get(userProfileKey);
   TokenModel token = box.get(tokenHiveKey);
+
   assignValue() async {
     myPosts = Provider.of<UploadFileService>(context, listen: false)
         .getUploadedPostsOfUser(userdata.id!, token.accessToken!);
@@ -90,6 +93,7 @@ class _MyUploadedPostsState extends State<MyUploadedPosts> {
 
 class Post extends StatelessWidget {
   final UserDataHive userdata = box.get(userDataKey);
+  final UserProfileDataHive userProfile = box.get(userProfileKey);
 
   final PostModel? post;
   Post({
@@ -108,9 +112,11 @@ class Post extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 backgroundColor: Colors.white,
-                foregroundImage: AssetImage('assets/images/anjali.png'),
+                foregroundImage: userProfile.gender == 'Female'
+                    ? AssetImage('assets/images/girl_avatar.png')
+                    : AssetImage("assets/images/boy_av.png"),
                 minRadius: 24,
               ),
               const SizedBox(width: 16),

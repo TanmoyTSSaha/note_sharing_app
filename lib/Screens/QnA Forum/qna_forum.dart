@@ -296,16 +296,6 @@ class _QnaPostState extends State<QnaPost> {
                   // ),
                 ],
               ),
-              const Spacer(),
-              IconButton(
-                onPressed: () {},
-                splashRadius: 24,
-                splashColor: primaryColor3,
-                icon: const Icon(
-                  Icons.more_horiz_outlined,
-                  color: primaryColor1,
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 12),

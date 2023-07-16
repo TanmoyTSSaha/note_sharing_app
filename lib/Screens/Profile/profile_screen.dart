@@ -70,7 +70,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: Image.asset(
-                              "assets/images/anjali.png",
+                              userProfileData.gender == "Female"
+                                  ? "assets/images/girl_avatar.png"
+                                  : "assets/images/boy_av.png",
                               // widget.userProfileData!.profile_image!,
                               height: Get.height * 0.125,
                               width: Get.height * 0.125,

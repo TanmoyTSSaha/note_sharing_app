@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:note_sharing_app/Hive/token/token.dart';
 import 'package:note_sharing_app/Services/login_service.dart';
 import 'package:note_sharing_app/main.dart';
@@ -139,28 +140,39 @@ class _PostsPage2State extends State<PostsPage2> {
                     return Center(child: CircularProgressIndicator());
                   }
 
-                  return ListView.separated(
-                    shrinkWrap: true,
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: snapshot.data!.data!.length,
-                    itemBuilder: (context, index) {
-                      // return Text(snapshot.data!.data.toString());
-                      return Posts(
-                        post: snapshot.data!.data![index],
-                        userAccessToken: userToken.accessToken!,
-                        user_id: userData!.id!,
-                        userRefreshToken: userToken.refreshToken!,
-                      );
-                    },
-                    separatorBuilder: (context, index) => Container(
-                      height: 6,
-                      width: Get.width,
-                      decoration: BoxDecoration(
-                        color: primaryColor3.withOpacity(0.25),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                  );
+                  return allPosts != []
+                      ? ListView.separated(
+                          shrinkWrap: true,
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: snapshot.data!.data!.length,
+                          itemBuilder: (context, index) {
+                            // return Text(snapshot.data!.data.toString());
+                            return Posts(
+                              post: snapshot.data!.data![index],
+                              userAccessToken: userToken.accessToken!,
+                              user_id: userData!.id!,
+                              userRefreshToken: userToken.refreshToken!,
+                            );
+                          },
+                          separatorBuilder: (context, index) => Container(
+                            height: 6,
+                            width: Get.width,
+                            decoration: BoxDecoration(
+                              color: primaryColor3.withOpacity(0.25),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: SizedBox(
+                            height: Get.width - 50,
+                            width: Get.width - 50,
+                            child: Image.asset(
+                              'assets/images/8652575.jpg',
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
                 })
             : Center(
                 child: CircularProgressIndicator.adaptive(
@@ -173,10 +185,10 @@ class _PostsPage2State extends State<PostsPage2> {
 }
 
 class Posts extends StatefulWidget {
-  String userAccessToken;
-  String userRefreshToken;
-  int user_id;
-  PostModel post;
+  final String userAccessToken;
+  final String userRefreshToken;
+  final int user_id;
+  final PostModel post;
   Posts({
     super.key,
     required this.post,
@@ -368,7 +380,7 @@ class _PostsState extends State<Posts> {
                           ),
                           child: userProfileData!["gender"] == 'Female'
                               ? Image.asset("assets/images/girl_avatar.png")
-                              : Image.asset("assets/images/boys_avatar.png"),
+                              : Image.asset("assets/images/boy_av.png"),
                         )
                   : Container(
                       height: 48,
@@ -378,12 +390,7 @@ class _PostsState extends State<Posts> {
                         color: Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(48),
                       ),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: primaryColor1,
-                        ),
-                      ),
-                    ),
+                      child: Image.asset("assets/images/girl_avatar.png")),
               const SizedBox(width: 16),
               Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -417,16 +424,6 @@ class _PostsState extends State<Posts> {
                   // ),
                 ],
               ),
-              const Spacer(),
-              IconButton(
-                onPressed: () {},
-                splashRadius: 24,
-                splashColor: primaryColor3,
-                icon: const Icon(
-                  Icons.more_horiz_outlined,
-                  color: primaryColor1,
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -449,13 +446,9 @@ class _PostsState extends State<Posts> {
                       height: Get.width,
                       color: Colors.grey.shade300,
                       child: Center(
-                        child: Text(
-                          'Oops! Something went wrong...',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                            color: textColorBlack,
-                          ),
+                        child: Image.asset(
+                          'assets/images/failed_image.jpg',
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),
@@ -473,6 +466,7 @@ class _PostsState extends State<Posts> {
                 onTap: () async {
                   setState(() {
                     liked = !liked;
+                    log("https://note-sharing-application.onrender.com${widget.post.post_image}");
                   });
                   liked ? postLike() : deleteLike();
                   getPostLike();

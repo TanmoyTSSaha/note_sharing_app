@@ -7,7 +7,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:note_sharing_app/Hive/logged_in.dart';
 import 'package:note_sharing_app/Hive/token/token.dart';
 import 'package:note_sharing_app/Screens/Bottom%20Navigation/bottom_navigation_bar.dart';
-import 'package:note_sharing_app/Screens/Home/home.dart';
 import 'package:note_sharing_app/Services/login_service.dart';
 import 'package:note_sharing_app/Services/upload_service.dart';
 import 'package:note_sharing_app/main.dart';
@@ -62,8 +61,6 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    log("---------------" + profilePicUrl.toString());
-
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -113,13 +110,12 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                                 : profilePicUrl != null
                                     ? Image.network(
                                         'https://note-sharing-application.onrender.com$profilePicUrl')
-                                    : Image.asset(
-                                        // File(profile!.path),
-                                        "assets/images/anjali.png",
-                                        height: Get.height * 0.125,
-                                        width: Get.height * 0.125,
-                                        fit: BoxFit.cover,
-                                        filterQuality: FilterQuality.high,
+                                    : Center(
+                                        child: Icon(
+                                          Icons.person_2_rounded,
+                                          color: primaryColor3,
+                                          size: 48,
+                                        ),
                                       ),
                           ),
                         ),
@@ -250,9 +246,9 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                                         widget.isNew == true) {
                                       setState(() {
                                         isButtonPressed = false;
+                                        Get.offAll(CustomBottomNavBar());
                                       });
                                       log("-------" + profileData.toString());
-                                      Get.offAll(CustomBottomNavBar());
                                     } else {
                                       setState(() {
                                         isButtonPressed = false;
@@ -277,12 +273,12 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
                                         widget.isNew == true) {
                                       setState(() {
                                         isButtonPressed = false;
+                                        Get.offAll(CustomBottomNavBar(
+                                            // userData: loginService.userData!,
+                                            // userProfileData: profileData,
+                                            ));
                                       });
                                       log("-------" + profileData.toString());
-                                      Get.offAll(Home(
-                                          // userData: loginService.userData!,
-                                          // userProfileData: profileData,
-                                          ));
                                     } else {
                                       setState(() {
                                         isButtonPressed = false;
